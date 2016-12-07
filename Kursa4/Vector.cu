@@ -184,18 +184,109 @@ template <class T>
 void print_vec(Vector<T> vec)
 {
 	for (auto e : vec)
-		cout << e << endl;
-	getchar();
+		cout << e << " ";
+	cout << endl;
 }
 
+template <class T>
+class Matrix;
+
+template <class T>
+__global__ void mat_sum_kernel(Matrix<T> matrix1, Matrix<T> & matrix2, Matrix<T> matrix_res, size_t x_dim, size_t y_dim)
+{
+	size_t x = threadIdx.x + blockIdx.x*blockDim.x;
+	size_t y = threadIdx.y + blockIdx.y*blockDim.y;
+	size_t i = 0;
+	size_t j = 0;
+		if (i + x < x_dim && j + y < y_dim)
+			matrix_res[x][y] = matrix1[x][y]+matrix2[x][y];
+}
+
+template <class T>
+class Matrix
+{
+	Vector<Vector<T>> matrix;
+public:
+	Matrix()
+	{
+		matrix = Vector<Vector<T>>();
+	}
+	Matrix(size_t x, size_t y)
+	{
+		matrix = Vector<Vector<T>>(x);
+		for (size_t i(0); i < x; i++)
+			matrix[i] = Vector<T>(y);
+	}
+	void push_back(Vector<T> vec)
+	{
+		matrix.push_back(vec);
+	}
+	//typedef Matrix::iterator iterator;
+	//typedef Matrix::const_iterator const_itreator;
+	//Matrix::iterator begin() { return matrix.begin(); }
+	//Matrix::iterator end() { return matrix.end(); }
+
+	double determinant()
+	{
+		if (!matrix.size() > 0 || !matrix[0].size > 0)
+			throw exception("Matrix is not initialized!");
+		if (matrix.size() != matrix[0].size())
+			throw exception("Matrix is not square!");
+	}
+
+	Vector<T>& operator[](size_t index) const
+	{
+		return matrix[index];
+	}
+	Vector<T>& operator[](size_t index)
+	{
+		return matrix[index];
+	}
+	size_t get_x_dim() const
+	{
+		return matrix.size();
+	}
+	size_t get_y_dim() const
+	{
+		return matrix[0].size();
+	}
+	friend Matrix<T> operator + (Matrix<T> &a, Matrix<T> &b)
+	{
+		if (!((a.get_x_dim() == b.get_x_dim()) && (b.get_y_dim() == a.get_y_dim())))
+			throw exception("Matrix sizes are different. Can't add them");\
+		Matrix<T> res = Matrix(a.get_x_dim(), a.get_y_dim());
+		for (auto i(0); i < a.get_x_dim(); i++)
+		{
+			res[i] = (a[i] + b[i]);
+		}
+		return res;
+	}
+
+};
+
+
+
+template <class T>
+void print_matr(Matrix<T> matr)
+{
+	for (auto i(0); i < matr.get_x_dim(); i++)
+		print_vec(matr[i]);
+	getchar();
+}
 int main()
 {
-	Vector<double> vec1, vec2, vec3;
+	Vector<int> vec1, vec2, vec3;
 	for (int i = 0; i < 15; i++)
 	{
-		vec1.emplace_back(1.1*i);
+		vec1.emplace_back(1*i);
 		vec2.emplace_back(1.124*i*i);
 	}
+	Matrix<int> matr;
+	for (auto i = 0; i < 15; i++)
+		matr.push_back(vec1);
+	print_matr(matr);
+	Matrix<int> matr2 = matr + matr;
+	print_matr(matr2);
 	//int* mem = (int*)malloc(vec1.size()*sizeof(int));
 	//mem = &vec1[0];
 	vec3 = vec1 + vec1;
