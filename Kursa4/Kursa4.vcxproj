@@ -154,6 +154,12 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     <CudaCompile Include="Matrix.cu" />
     <CudaCompile Include="Vector.cu" />
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ComplexNumber.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ComplexNumber.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 8.0.targets" />
