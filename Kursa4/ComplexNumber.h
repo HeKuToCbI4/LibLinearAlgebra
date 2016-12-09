@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
-#include <math.h>
+
+#include <string>
 class ComplexNumber
 {
 	double real;
@@ -16,9 +17,10 @@ public:
 	ComplexNumber operator+(const ComplexNumber&);
 	ComplexNumber operator*(const ComplexNumber&);
 	ComplexNumber operator/(const ComplexNumber&);
-	bool operator ==(const ComplexNumber&);
+	ComplexNumber operator-(const ComplexNumber&);
+	bool operator ==(const ComplexNumber&) const;
 	ComplexNumber(const ComplexNumber&);
-	ComplexNumber get_conjugation();
+	ComplexNumber get_conjugation() const;
 	template <class T>
 	ComplexNumber operator/(const T&);
 	template <class T>
@@ -33,8 +35,8 @@ public:
 	std::istream& operator>>(std::istream&, ComplexNumber&);
 	template <class T>
 	ComplexNumber& operator+=(const T&);
-	double module();
-	double argument();
+	double module() const;
+	double argument() const;
 	~ComplexNumber();
 };
 

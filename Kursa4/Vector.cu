@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <exception>
+#include "ComplexNumber.h"
 using namespace std;
 
 template <class T>
@@ -275,6 +276,18 @@ void print_matr(Matrix<T> matr)
 }
 int main()
 {
+	ComplexNumber num1(1, 1), num2(2, -3);
+	std::cout << num1 << "   " << num2 << endl;
+	cin >> num1 >> num2;
+	
+	cout << "sum " << num1 + num2 << endl;
+	cout << "diff " << num1 - num2 << endl;
+	cout << "multiple " << num1*num2 << endl;
+	cout << "division " << num1 / num2 << endl;
+	cout << "conjugation " << num1.get_conjugation() << endl;
+	cout << "module " << num1.module() << endl;
+	cout << "argument " << num1.argument() << endl;
+	getchar();
 	Vector<int> vec1, vec2, vec3;
 	for (int i = 0; i < 15; i++)
 	{

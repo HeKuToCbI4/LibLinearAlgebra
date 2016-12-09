@@ -56,7 +56,15 @@ ComplexNumber ComplexNumber::operator/(const ComplexNumber&)
 	return get_conjugation() / (*this*get_conjugation()).get_real();
 }
 
-bool ComplexNumber::operator==(const ComplexNumber& right)
+ComplexNumber ComplexNumber::operator-(const ComplexNumber& num)
+{
+	auto res(*this);
+	res.real -= num.real;
+	res.image -= num.image;
+	return res;
+}
+
+bool ComplexNumber::operator==(const ComplexNumber& right) const
 {
 	return real == right.real && image == right.image;
 }
@@ -67,7 +75,7 @@ ComplexNumber::ComplexNumber(const ComplexNumber& num)
 	image = num.image;
 }
 
-ComplexNumber ComplexNumber::get_conjugation()
+ComplexNumber ComplexNumber::get_conjugation() const
 {
 	ComplexNumber res(*this);
 	res.image = image*(-1);
@@ -75,12 +83,12 @@ ComplexNumber ComplexNumber::get_conjugation()
 }
 
 
-double ComplexNumber::module()
+double ComplexNumber::module() const
 {
 	return sqrt(real*real + image*image);
 }
 
-double ComplexNumber::argument()
+double ComplexNumber::argument() const
 {
 	return atan(image / real);
 }
@@ -105,6 +113,8 @@ ComplexNumber ComplexNumber::operator+(const T& num)
 	res.real += num;
 	return res;
 }
+
+
 
 template <class T>
 ComplexNumber ComplexNumber::operator-(const T& num)
@@ -135,16 +145,22 @@ std::ostream& operator<<(std::ostream& os, const ComplexNumber& num)
 	os << num.real;
 	if (num.image>0)
 	{
-		os << "+" << num.image << "i" << std::endl;
+		os << "+" << num.image << "i";
 	} 
 	else if (num.image!=0)
 	{
-		os << num.image << "i" << std::endl;
+		os << num.image << "i";
 	}
+	return os;
  }
 
 std::istream& operator>>(std::istream& is, ComplexNumber& num)
 {
-	is >> num.real >> num.image;
+	std::string s;
+	is >> s;
+	if (s.find('+') != std::string::npos)
+		sscanf_s(s.c_str(), "%lf+%lfi", &num.real, &num.image);
+	else
+		sscanf_s(s.c_str(), "%lf%lfi", &num.real, &num.image);
 	return is;
 }
