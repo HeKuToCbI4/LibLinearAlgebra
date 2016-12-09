@@ -193,14 +193,19 @@ template <class T>
 class Matrix;
 
 template <class T>
-__global__ void mat_sum_kernel(Matrix<T> matrix1, Matrix<T> & matrix2, Matrix<T> matrix_res, size_t x_dim, size_t y_dim)
+void print_matr(Matrix<T>);
+
+template <class T>
+__global__ void matMulKernel(const T* a, const T* b, T* c, size_t ay, size_t by, size_t cy)
 {
-	size_t x = threadIdx.x + blockIdx.x*blockDim.x;
-	size_t y = threadIdx.y + blockIdx.y*blockDim.y;
-	size_t i = 0;
-	size_t j = 0;
-		if (i + x < x_dim && j + y < y_dim)
-			matrix_res[x][y] = matrix1[x][y]+matrix2[x][y];
+	T cval=0;
+	size_t col = blockIdx.x*blockDim.x + threadIdx.x;
+	size_t row = blockIdx.y*blockDim.y + threadIdx.y;
+	for (size_t e = 0; e < ay; ++e)
+	{
+		cval += a[row*ay + e] * b[e*by + col];
+	}
+	c[row*cy+col]=cval;
 }
 
 template <class T>
@@ -218,7 +223,13 @@ public:
 		for (size_t i(0); i < x; i++)
 			matrix[i] = Vector<T>(y);
 	}
+
 	void push_back(Vector<T> vec)
+	{
+		matrix.push_back(vec);
+	}
+
+	Matrix(const Vector<T>& vec) : Matrix()
 	{
 		matrix.push_back(vec);
 	}
@@ -235,22 +246,26 @@ public:
 			throw exception("Matrix is not square!");
 	}
 
-	Vector<T>& operator[](size_t index) const
+	const Vector<T>& operator[](size_t index) const
 	{
 		return matrix[index];
 	}
+
 	Vector<T>& operator[](size_t index)
 	{
 		return matrix[index];
 	}
+
 	size_t get_x_dim() const
 	{
 		return matrix.size();
 	}
+
 	size_t get_y_dim() const
 	{
 		return matrix[0].size();
 	}
+
 	friend Matrix<T> operator + (Matrix<T> &a, Matrix<T> &b)
 	{
 		if (!((a.get_x_dim() == b.get_x_dim()) && (b.get_y_dim() == a.get_y_dim())))
@@ -262,7 +277,74 @@ public:
 		}
 		return res;
 	}
+	friend
+	Matrix<T> operator*(const Matrix<T> &a, const Matrix<T> &b)
+	{
+		if (a.get_y_dim() != b.get_x_dim())
+			throw exception("Matrices are not fucking multiplable");
+		Matrix<T> res(a.get_x_dim(), b.get_y_dim());
+		T* h_a;
+		T* h_b;
+		T* h_c;
+		T *d_a, *d_b, *d_c;
+		h_a = (T*)(malloc(sizeof(T)*a.get_x_dim()*a.get_y_dim()));
+		h_b = (T*)(malloc(sizeof(T)*b.get_x_dim()*b.get_y_dim()));
+		h_c = (T*)(malloc(sizeof(T)*a.get_x_dim()*b.get_y_dim()));
+		for (size_t i(0); i < a.get_x_dim(); i++)
+		{
+			for (size_t j(0); j < a.get_y_dim(); j++)
+			{
+				h_a[i*a.get_y_dim() + j] = a[i][j];
+			}
+		}
+		cout << "B HEIGHT: " << b.get_x_dim() << " B WIDTH: " << b.get_y_dim() << endl;
+		for (size_t i(0); i < b.get_x_dim(); i++)
+		{
+			for (size_t j(0); j < b.get_y_dim(); j++)
+			{
+				h_b[i*b.get_y_dim() + j] = b[i][j];
+			}
+		}
+		cudaMalloc(&d_a, sizeof(T)*a.get_x_dim()*a.get_y_dim());
+		cudaMalloc(&d_b, sizeof(T)*b.get_x_dim()*b.get_y_dim());
+		cudaMalloc(&d_c, sizeof(T)*a.get_x_dim()*b.get_y_dim());
+		cudaMemcpy(d_a, h_a, sizeof(T)*a.get_x_dim()*a.get_y_dim(), cudaMemcpyHostToDevice);
+		cudaMemcpy(d_b, h_b, sizeof(T)*b.get_x_dim()*b.get_y_dim(), cudaMemcpyHostToDevice);
+		dim3 block(1, 1);
+		dim3 grid(b.get_y_dim(), a.get_x_dim());
+		matMulKernel << <grid, block >> > (d_a, d_b, d_c, a.get_y_dim(), b.get_y_dim(), res.get_y_dim());
+		cudaMemcpy(h_c, d_c, sizeof(T)*a.get_x_dim()*b.get_y_dim(), cudaMemcpyDeviceToHost);
+		for (size_t i(0); i < res.get_x_dim(); i++)
+			for (size_t j(0); j < res.get_y_dim(); j++)
+				res[i][j] = h_c[i*res.get_y_dim() + j];
+		cudaFree(d_a);
+		cudaFree(d_b);
+		cudaFree(d_c);
+		free(h_a);
+		free(h_b);
+		free(h_c);
+		return res;
 
+	}
+
+	friend Matrix<T> operator*(const Matrix<T>&a, const Vector<T> &b)
+	{
+		Matrix<T> tmp(b);
+		print_matr(tmp);
+		cout << "HEIGHT " << tmp.get_x_dim() << "  WIDTH " << tmp.get_y_dim() << endl;
+		cout << "MHEIGHT " << a.get_y_dim() << " MWIDTH " << tmp.get_x_dim() << endl;
+		return a*tmp;
+	}
+
+	friend Matrix<T> operator*(const Vector<T>& b, const Matrix<T>&a)
+	{
+		Matrix<T> tmp(b);
+		print_matr(tmp);
+		print_matr(a);
+		cout << "HEIGHT " << tmp.get_x_dim() << "  WIDTH " << tmp.get_y_dim() << endl;
+		cout << "MHEIGHT " << a.get_y_dim() << " MWIDTH " << a.get_x_dim() << endl;
+		return tmp*a;
+	}
 };
 
 
@@ -276,7 +358,7 @@ void print_matr(Matrix<T> matr)
 }
 int main()
 {
-	ComplexNumber num1(1, 1), num2(2, -3);
+	/*ComplexNumber num1(1, 1), num2(2, -3);
 	std::cout << num1 << "   " << num2 << endl;
 	cin >> num1 >> num2;
 	
@@ -287,26 +369,34 @@ int main()
 	cout << "conjugation " << num1.get_conjugation() << endl;
 	cout << "module " << num1.module() << endl;
 	cout << "argument " << num1.argument() << endl;
-	getchar();
+	getchar();*/
 	Vector<int> vec1, vec2, vec3;
 	for (int i = 0; i < 15; i++)
 	{
 		vec1.emplace_back(1*i);
-		vec2.emplace_back(1.124*i*i);
+		if (i<2)
+		vec2.emplace_back(i);
 	}
 	Matrix<int> matr;
+	Matrix<int> matr3;
+	Vector<int> test;
+	test.emplace_back(1);
 	for (auto i = 0; i < 15; i++)
+	{
 		matr.push_back(vec1);
+		matr3.push_back(test);
+	}
 	print_matr(matr);
-	Matrix<int> matr2 = matr + matr;
+	print_matr(matr3);
+	Matrix<int> matr2 = matr*matr3;
 	print_matr(matr2);
 	//int* mem = (int*)malloc(vec1.size()*sizeof(int));
 	//mem = &vec1[0];
-	vec3 = vec1 + vec1;
+	/*vec3 = vec1 + vec1;
 	double scalar_multiple = vec1*vec2;
 	print_vec(vec3);
 	cout << "SCALAR: " << scalar_multiple << endl;
-	getchar();
+	getchar();*/
 	return 0;
 }
 
