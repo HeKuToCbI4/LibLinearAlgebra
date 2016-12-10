@@ -208,6 +208,15 @@ __global__ void matMulKernel(const T* a, const T* b, T* c, size_t ay, size_t by,
 	c[row*cy+col]=cval;
 }
 
+template<class T>
+__global__ void matCompareKernel(const T* a, const T* b, bool* res, size_t ay)
+{
+	size_t col = blockIdx.x*blockDim.x + threadIdx.x;
+	size_t row = blockIdx.y*blockDim.y + threadIdx.y;
+	if (a[row*ay + col] != b[row*ay + col])
+		*res = false;
+}
+
 template <class T>
 class Matrix
 {
@@ -233,11 +242,7 @@ public:
 	{
 		matrix.push_back(vec);
 	}
-	//typedef Matrix::iterator iterator;
-	//typedef Matrix::const_iterator const_itreator;
-	//Matrix::iterator begin() { return matrix.begin(); }
-	//Matrix::iterator end() { return matrix.end(); }
-
+	
 	double determinant()
 	{
 		if (!matrix.size() > 0 || !matrix[0].size > 0)
@@ -297,7 +302,6 @@ public:
 				h_a[i*a.get_y_dim() + j] = a[i][j];
 			}
 		}
-		cout << "B HEIGHT: " << b.get_x_dim() << " B WIDTH: " << b.get_y_dim() << endl;
 		for (size_t i(0); i < b.get_x_dim(); i++)
 		{
 			for (size_t j(0); j < b.get_y_dim(); j++)
@@ -330,20 +334,62 @@ public:
 	friend Matrix<T> operator*(const Matrix<T>&a, const Vector<T> &b)
 	{
 		Matrix<T> tmp(b);
-		print_matr(tmp);
-		cout << "HEIGHT " << tmp.get_x_dim() << "  WIDTH " << tmp.get_y_dim() << endl;
-		cout << "MHEIGHT " << a.get_y_dim() << " MWIDTH " << tmp.get_x_dim() << endl;
+
 		return a*tmp;
 	}
 
 	friend Matrix<T> operator*(const Vector<T>& b, const Matrix<T>&a)
 	{
 		Matrix<T> tmp(b);
-		print_matr(tmp);
-		print_matr(a);
-		cout << "HEIGHT " << tmp.get_x_dim() << "  WIDTH " << tmp.get_y_dim() << endl;
-		cout << "MHEIGHT " << a.get_y_dim() << " MWIDTH " << a.get_x_dim() << endl;
+
 		return tmp*a;
+	}
+	friend
+	bool operator==(const Matrix<T> a, const Matrix<T>& b)
+	{
+		if (a.get_x_dim() != b.get_x_dim() || a.get_y_dim() != b.get_y_dim())
+			return false;
+		bool* res = (bool*)malloc(sizeof(bool));
+		*res = true;
+		T* h_a;
+		T* h_b;
+		T *d_a, *d_b;
+		bool* d_res;
+		
+		h_a = (T*)(malloc(sizeof(T)*a.get_x_dim()*a.get_y_dim()));
+		h_b = (T*)(malloc(sizeof(T)*b.get_x_dim()*b.get_y_dim()));
+		for (size_t i(0); i < a.get_x_dim(); i++)
+		{
+			for (size_t j(0); j < a.get_y_dim(); j++)
+			{
+				h_a[i*a.get_y_dim() + j] = a[i][j];
+			}
+		}
+		for (size_t i(0); i < b.get_x_dim(); i++)
+		{
+			for (size_t j(0); j < b.get_y_dim(); j++)
+			{
+				h_b[i*b.get_y_dim() + j] = b[i][j];
+			}
+		}
+		cudaMalloc(&d_a, sizeof(T)*a.get_x_dim()*a.get_y_dim());
+		cudaMalloc(&d_b, sizeof(T)*b.get_x_dim()*b.get_y_dim());
+		cudaMalloc(&d_res, sizeof(bool));
+		cudaMemcpy(d_res, res, sizeof(bool), cudaMemcpyHostToDevice);
+		cudaMemcpy(d_a, h_a, sizeof(T)*a.get_x_dim()*a.get_y_dim(), cudaMemcpyHostToDevice);
+		cudaMemcpy(d_b, h_b, sizeof(T)*b.get_x_dim()*b.get_y_dim(), cudaMemcpyHostToDevice);
+		dim3 block(1, 1);
+		dim3 grid(b.get_x_dim(), a.get_y_dim());
+		matCompareKernel << <grid, block >> >(d_a, d_b, d_res, a.get_y_dim());
+		cudaMemcpy(res, d_res, sizeof(bool), cudaMemcpyDeviceToHost);
+		cudaFree(d_a);
+		cudaFree(d_b);
+		cudaFree(d_res);
+		free(h_a);
+		free(h_b);
+		bool val = *res;
+		free(res);
+		return val;
 	}
 };
 
@@ -374,8 +420,7 @@ int main()
 	for (int i = 0; i < 15; i++)
 	{
 		vec1.emplace_back(1*i);
-		if (i<2)
-		vec2.emplace_back(i);
+		vec2.emplace_back(2*i);
 	}
 	Matrix<int> matr;
 	Matrix<int> matr3;
@@ -384,10 +429,15 @@ int main()
 	for (auto i = 0; i < 15; i++)
 	{
 		matr.push_back(vec1);
-		matr3.push_back(test);
-	}
+		matr3.push_back(vec2);
+	} // <3 kek
 	print_matr(matr);
 	print_matr(matr3);
+	if (matr == matr3)
+		cout << "COMPARATION OF MATRICES: TRUE\n";
+	else
+		cout << "DIS IS GODDAMN FALSE BEAAAACH!\n";
+		
 	Matrix<int> matr2 = matr*matr3;
 	print_matr(matr2);
 	//int* mem = (int*)malloc(vec1.size()*sizeof(int));
@@ -400,73 +450,3 @@ int main()
 	return 0;
 }
 
-/*cudaError_t addWithCuda(int *c, const int *a, const int *b, size_t size)
-{
-	int *dev_a = 0;
-	int *dev_b = 0;
-	int *dev_c = 0;
-	cudaError_t cudaStatus;
-	// Allocate GPU buffers for three vectors (two input, one output)    .
-	cudaStatus = cudaMalloc((void**)&dev_c, size * sizeof(int));
-	if (cudaStatus != cudaSuccess) {
-		fprintf(stderr, "cudaMalloc failed!");
-		goto Error;
-	}
-
-	cudaStatus = cudaMalloc((void**)&dev_a, size * sizeof(int));
-	if (cudaStatus != cudaSuccess) {
-		fprintf(stderr, "cudaMalloc failed!");
-		goto Error;
-	}
-
-	cudaStatus = cudaMalloc((void**)&dev_b, size * sizeof(int));
-	if (cudaStatus != cudaSuccess) {
-		fprintf(stderr, "cudaMalloc failed!");
-		goto Error;
-	}
-
-	// Copy input vectors from host memory to GPU buffers.
-	cudaStatus = cudaMemcpy(dev_a, a, size * sizeof(int), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) {
-		fprintf(stderr, "cudaMemcpy failed!");
-		goto Error;
-	}
-
-	cudaStatus = cudaMemcpy(dev_b, b, size * sizeof(int), cudaMemcpyHostToDevice);
-	if (cudaStatus != cudaSuccess) {
-		fprintf(stderr, "cudaMemcpy failed!");
-		goto Error;
-	}
-
-	// Launch a kernel on the GPU with one thread for each element.
-	addKernel << <1, size >> >(dev_c, dev_a, dev_b);
-
-	// Check for any errors launching the kernel
-	cudaStatus = cudaGetLastError();
-	if (cudaStatus != cudaSuccess) {
-		fprintf(stderr, "addKernel launch failed: %s\n", cudaGetErrorString(cudaStatus));
-		goto Error;
-	}
-
-	// cudaDeviceSynchronize waits for the kernel to finish, and returns
-	// any errors encountered during the launch.
-	cudaStatus = cudaDeviceSynchronize();
-	if (cudaStatus != cudaSuccess) {
-		fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching addKernel!\n", cudaStatus);
-		goto Error;
-	}
-
-	// Copy output vector from GPU buffer to host memory.
-	cudaStatus = cudaMemcpy(c, dev_c, size * sizeof(int), cudaMemcpyDeviceToHost);
-	if (cudaStatus != cudaSuccess) {
-		fprintf(stderr, "cudaMemcpy failed!");
-		goto Error;
-	}
-
-Error:
-	cudaFree(dev_c);
-	cudaFree(dev_a);
-	cudaFree(dev_b);
-
-	return cudaStatus;
-}*/
