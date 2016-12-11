@@ -53,6 +53,17 @@ public:
 	Vector<T>(size_t size) : vector<T>(size)
 	{
 	}
+	Vector<T>(const Vector<T>& vec)
+	{
+		for (auto elem : vec)
+			this->emplace_back(elem);
+	}
+	Vector<T> & operator=(const Vector<T>& vec)
+	{
+		for (auto elem : vec)
+			this->emplace_back(elem);
+		return *this;
+	}
 	Vector operator +(const Vector<T>& a)
 	{
 		Vector<T> b = *this;
@@ -165,16 +176,10 @@ public:
 	{
 		return a*b;
 	}
-	Vector cross_multiple(const Vector<T>&);
 	Vector mixed_multiple(const Vector<T>&);
 };
 
 
-
-template <class T>
-Vector<T> Vector<T>::cross_multiple(const Vector<T>&)
-{
-}
 
 template <class T>
 Vector<T> Vector<T>::mixed_multiple(const Vector<T>&)
@@ -242,6 +247,12 @@ public:
 	{
 		matrix.push_back(vec);
 	}
+
+	Matrix(const Matrix<T>& mat)
+	{
+		for (auto i(0); i < mat.get_x_dim(); i++)
+			matrix.push_back(Vector<T>(mat[i]));
+	}
 	
 	double determinant()
 	{
@@ -249,6 +260,15 @@ public:
 			throw exception("Matrix is not initialized!");
 		if (matrix.size() != matrix[0].size())
 			throw exception("Matrix is not square!");
+	}
+
+	Matrix<T> transponate()
+	{
+		Matrix<T> res(get_y_dim(), get_x_dim());
+		for (auto i(0); i < get_x_dim(); i++)
+			for (auto j(0); j < get_y_dim(); j++)
+				res[j][i] = matrix[i][j];
+		return res;
 	}
 
 	const Vector<T>& operator[](size_t index) const
@@ -426,27 +446,26 @@ int main()
 	Matrix<int> matr3;
 	Vector<int> test;
 	test.emplace_back(1);
-	for (auto i = 0; i < 15; i++)
+	for (auto i = 0; i < 10; i++)
 	{
 		matr.push_back(vec1);
 		matr3.push_back(vec2);
 	} // <3 kek
 	print_matr(matr);
-	print_matr(matr3);
+	print_matr(matr3.transponate());
 	if (matr == matr3)
 		cout << "COMPARATION OF MATRICES: TRUE\n";
 	else
 		cout << "DIS IS GODDAMN FALSE BEAAAACH!\n";
 		
-	Matrix<int> matr2 = matr*matr3;
+	Matrix<int> matr2 = matr*matr3.transponate();
 	print_matr(matr2);
-	//int* mem = (int*)malloc(vec1.size()*sizeof(int));
-	//mem = &vec1[0];
-	/*vec3 = vec1 + vec1;
+	
+	vec3 = vec1 + vec1;
 	double scalar_multiple = vec1*vec2;
 	print_vec(vec3);
 	cout << "SCALAR: " << scalar_multiple << endl;
-	getchar();*/
+	getchar();
 	return 0;
 }
 
