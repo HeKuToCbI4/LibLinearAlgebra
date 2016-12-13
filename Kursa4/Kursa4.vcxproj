@@ -156,6 +156,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ComplexNumber.cpp" />
+    <ClCompile Include="Testing Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ComplexNumber.h" />

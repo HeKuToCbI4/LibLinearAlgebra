@@ -1,7 +1,5 @@
 #pragma once
 #include <iostream>
-
-#include <string>
 class ComplexNumber
 {
 	double real;
@@ -33,10 +31,21 @@ public:
 	std::ostream& operator<<(std::ostream&, const ComplexNumber&);
 	friend
 	std::istream& operator>>(std::istream&, ComplexNumber&);
-	template <class T>
-	ComplexNumber& operator+=(const T&);
+	
 	double module() const;
 	double argument() const;
+	ComplexNumber& operator+=(const ComplexNumber&);
+	ComplexNumber& operator-=(const ComplexNumber&);
+	ComplexNumber& operator*=(const ComplexNumber&);
+	ComplexNumber& operator/=(const ComplexNumber&);
+	template <class T>
+	ComplexNumber& operator+=(const T&);
+	template <class T>
+	ComplexNumber& operator-=(const T&);
+	template <class T>
+	ComplexNumber& operator*=(const T&);
+	template <class T>
+	ComplexNumber& operator/=(const T&);
 	~ComplexNumber();
 };
 

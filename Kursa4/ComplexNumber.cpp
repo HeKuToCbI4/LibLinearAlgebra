@@ -1,5 +1,5 @@
 #include "ComplexNumber.h"
-
+#include <string>
 
 
 ComplexNumber::ComplexNumber()
@@ -51,9 +51,9 @@ ComplexNumber ComplexNumber::operator*(const ComplexNumber& right)
 	return res;
 }
 
-ComplexNumber ComplexNumber::operator/(const ComplexNumber&)
+ComplexNumber ComplexNumber::operator/(const ComplexNumber& num)
 {
-	return get_conjugation() / (*this*get_conjugation()).get_real();
+	return num.get_conjugation() / (*this*num.get_conjugation()).get_real();
 }
 
 ComplexNumber ComplexNumber::operator-(const ComplexNumber& num)
@@ -91,6 +91,38 @@ double ComplexNumber::module() const
 double ComplexNumber::argument() const
 {
 	return atan(image / real);
+}
+
+ComplexNumber& ComplexNumber::operator+=(const ComplexNumber& num)
+{
+	this->real += num.real;
+	this->image += num.image;
+	return *this;
+}
+
+ComplexNumber& ComplexNumber::operator-=(const ComplexNumber& num)
+{
+	this->real -= num.real;
+	this->image -= num.image;
+	return *this;
+}
+
+ComplexNumber& ComplexNumber::operator*=(const ComplexNumber& num)
+{
+	ComplexNumber res;
+	res.real = real*num.real - image*num.image;
+	res.image = real*res.image + image*num.real;
+	this->real = res.real;
+	this->image = res.image;
+	return *this;
+}
+
+ComplexNumber& ComplexNumber::operator/=(const ComplexNumber& num)
+{
+	auto res = num.get_conjugation() / (*this*num.get_conjugation()).get_real();
+	this->real = res.real;
+	this->image = res.image;
+	return *this;
 }
 
 ComplexNumber::~ComplexNumber()
@@ -136,20 +168,43 @@ ComplexNumber ComplexNumber::operator*(const T& num)
 template <class T>
 ComplexNumber& ComplexNumber::operator+=(const T& num)
 {
-	*this = *this + num;
+	this->real += num;
+	return *this;
+}
+
+template <class T>
+ComplexNumber& ComplexNumber::operator-=(const T& num)
+{
+	this->real -= num;
+	return *this;
+}
+
+template <class T>
+ComplexNumber& ComplexNumber::operator*=(const T& num)
+{
+	this->real *= num;
+	this->image *= num;
+	return *this;
+}
+
+template <class T>
+ComplexNumber& ComplexNumber::operator/=(const T& num)
+{
+	this->real /= num;
+	this->image /= num;
 	return *this;
 }
 
 std::ostream& operator<<(std::ostream& os, const ComplexNumber& num)
 {
 	os << num.real;
-	if (num.image>0)
+	if (num.image>=0)
 	{
-		os << "+" << num.image << "i";
+		os << "+" << num.image << "*i";
 	} 
-	else if (num.image!=0)
+	else
 	{
-		os << num.image << "i";
+		os << num.image << "*i";
 	}
 	return os;
  }
@@ -159,8 +214,8 @@ std::istream& operator>>(std::istream& is, ComplexNumber& num)
 	std::string s;
 	is >> s;
 	if (s.find('+') != std::string::npos)
-		sscanf_s(s.c_str(), "%lf+%lfi", &num.real, &num.image);
+		sscanf_s(s.c_str(), "%lf+%lf*i", &num.real, &num.image);
 	else
-		sscanf_s(s.c_str(), "%lf%lfi", &num.real, &num.image);
+		sscanf_s(s.c_str(), "%lf%lf*i", &num.real, &num.image);
 	return is;
 }
