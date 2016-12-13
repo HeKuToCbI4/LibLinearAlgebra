@@ -7,8 +7,8 @@ class ComplexNumber
 public:
 	ComplexNumber();
 	ComplexNumber(double real_x, double image_x): real(real_x), image(image_x){};
-	double get_real();
-	double get_imaginary();
+	double get_real() const;
+	double get_imaginary() const;
 	void set_real(const double&);
 	void set_imaginary(const double&);
 	ComplexNumber& operator =(const ComplexNumber&);
@@ -37,7 +37,7 @@ public:
 	ComplexNumber& operator+=(const ComplexNumber&);
 	ComplexNumber& operator-=(const ComplexNumber&);
 	ComplexNumber& operator*=(const ComplexNumber&);
-	ComplexNumber& operator/=(const ComplexNumber&);
+	ComplexNumber& operator/=(ComplexNumber&);
 	template <class T>
 	ComplexNumber& operator+=(const T&);
 	template <class T>

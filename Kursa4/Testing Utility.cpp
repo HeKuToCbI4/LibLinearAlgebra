@@ -1,13 +1,31 @@
 #include "ComplexNumber.h"
-#include "Vector.cu"
-#include "Matrix.cu"
+#include "Vector.cuh"
+#include "Matrix.cuh"
 #include <iostream>
 #include <exception>
 #include <chrono>
 #include <string>
 #include <fstream>
+
 using namespace std;
 using namespace chrono;
+
+
+template <class T>
+void print_vec(Vector<T> vec)
+{
+	for (auto e : vec)
+		cout << e << " ";
+	cout << endl;
+}
+
+template <class T>
+void print_matr(Matrix<T> matr)
+{
+	for (auto i(0); i < matr.get_x_dim(); i++)
+		print_vec(matr[i]);
+	getchar();
+}
 
 int main()
 {
@@ -51,6 +69,8 @@ int main()
 	cout << "a-=b: " << (a -= b) << endl;
 	cout << "a*=b: " << (a *= b) << endl;
 	cout << "a/=b: " << (a /= b) << endl;
+
+
 	system("pause");
 	return 0;
 }

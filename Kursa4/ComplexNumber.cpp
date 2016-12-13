@@ -8,12 +8,12 @@ ComplexNumber::ComplexNumber()
 	image = 0;
 }
 
-double ComplexNumber::get_real()
+double ComplexNumber::get_real() const
 {
 	return real;
 }
 
-double ComplexNumber::get_imaginary()
+double ComplexNumber::get_imaginary() const
 {
 	return image;
 }
@@ -47,7 +47,7 @@ ComplexNumber ComplexNumber::operator*(const ComplexNumber& right)
 {
 	ComplexNumber res;
 	res.real = real*right.real - image*right.image;
-	res.image = real*res.image + image*right.real;
+	res.image = real*right.image + image*right.real;
 	return res;
 }
 
@@ -111,15 +111,15 @@ ComplexNumber& ComplexNumber::operator*=(const ComplexNumber& num)
 {
 	ComplexNumber res;
 	res.real = real*num.real - image*num.image;
-	res.image = real*res.image + image*num.real;
+	res.image = real*num.image + image*num.real;
 	this->real = res.real;
 	this->image = res.image;
 	return *this;
 }
 
-ComplexNumber& ComplexNumber::operator/=(const ComplexNumber& num)
+ComplexNumber& ComplexNumber::operator/=(ComplexNumber& num)
 {
-	auto res = num.get_conjugation() / (*this*num.get_conjugation()).get_real();
+	auto res = *this * num.get_conjugation() / (num*num.get_conjugation()).get_real();
 	this->real = res.real;
 	this->image = res.image;
 	return *this;
