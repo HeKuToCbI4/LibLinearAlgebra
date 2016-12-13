@@ -27,6 +27,7 @@ void print_matr(Matrix<T> matr)
 	getchar();
 }
 
+
 int main()
 {
 	cout << "PART 1: Testing for Complex number methods:\n";
@@ -69,8 +70,14 @@ int main()
 	cout << "a-=b: " << (a -= b) << endl;
 	cout << "a*=b: " << (a *= b) << endl;
 	cout << "a/=b: " << (a /= b) << endl;
-
+	cout << "A is now: " << a << endl;
+	float num = 2;
+	cout << "a+2=" << (a + num) << endl;
+	cout << "a-2=" << (a - num) << endl;
+	cout << "a*2=" << (a * num) << endl;
+	cout << "a/2=" << (a / num) << endl;
 
 	system("pause");
 	return 0;
 }
+

@@ -1,5 +1,6 @@
 #include "ComplexNumber.h"
 #include <string>
+#include <exception>
 
 
 ComplexNumber::ComplexNumber()
@@ -129,71 +130,7 @@ ComplexNumber::~ComplexNumber()
 {
 }
 
-template <class T>
-ComplexNumber ComplexNumber::operator/(const T& num)
-{
-	auto res(*this);
-	res.image /= num;
-	res.real /= num;
-	return res;
-}
 
-template <class T>
-ComplexNumber ComplexNumber::operator+(const T& num)
-{
-	auto res(*this);
-	res.real += num;
-	return res;
-}
-
-
-
-template <class T>
-ComplexNumber ComplexNumber::operator-(const T& num)
-{
-	auto res(*this);
-	res.real -= num;
-	return res;
-}
-
-template <class T>
-ComplexNumber ComplexNumber::operator*(const T& num)
-{
-	auto res(*this);
-	res.real *= num;
-	res.image *= num;
-	return res;
-}
-
-template <class T>
-ComplexNumber& ComplexNumber::operator+=(const T& num)
-{
-	this->real += num;
-	return *this;
-}
-
-template <class T>
-ComplexNumber& ComplexNumber::operator-=(const T& num)
-{
-	this->real -= num;
-	return *this;
-}
-
-template <class T>
-ComplexNumber& ComplexNumber::operator*=(const T& num)
-{
-	this->real *= num;
-	this->image *= num;
-	return *this;
-}
-
-template <class T>
-ComplexNumber& ComplexNumber::operator/=(const T& num)
-{
-	this->real /= num;
-	this->image /= num;
-	return *this;
-}
 
 std::ostream& operator<<(std::ostream& os, const ComplexNumber& num)
 {
@@ -219,3 +156,4 @@ std::istream& operator>>(std::istream& is, ComplexNumber& num)
 		sscanf_s(s.c_str(), "%lf%lf*i", &num.real, &num.image);
 	return is;
 }
+
