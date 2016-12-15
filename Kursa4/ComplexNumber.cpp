@@ -1,6 +1,5 @@
 #include "ComplexNumber.h"
 #include <string>
-#include <exception>
 
 
 ComplexNumber::ComplexNumber()
@@ -36,7 +35,7 @@ ComplexNumber& ComplexNumber::operator=(const ComplexNumber& num)
 	return *this;
 }
 
-ComplexNumber ComplexNumber::operator+(const ComplexNumber& right)
+ComplexNumber ComplexNumber::operator+(const ComplexNumber& right) const
 {
 	ComplexNumber res;
 	res.real = real + right.real;
@@ -44,7 +43,7 @@ ComplexNumber ComplexNumber::operator+(const ComplexNumber& right)
 	return res;
 }
 
-ComplexNumber ComplexNumber::operator*(const ComplexNumber& right)
+ComplexNumber ComplexNumber::operator*(const ComplexNumber& right) const
 {
 	ComplexNumber res;
 	res.real = real*right.real - image*right.image;
@@ -52,12 +51,15 @@ ComplexNumber ComplexNumber::operator*(const ComplexNumber& right)
 	return res;
 }
 
-ComplexNumber ComplexNumber::operator/(const ComplexNumber& num)
+ComplexNumber ComplexNumber::operator/(const ComplexNumber& num) const
 {
-	return num.get_conjugation() / (*this*num.get_conjugation()).get_real();
+	ComplexNumber res(*this);
+	res.real = (*this*num.get_conjugation()).get_real() / (num*num.get_conjugation()).get_real();
+	res.image = (*this*num.get_conjugation()).get_imaginary() / (num*num.get_conjugation()).get_real();
+	return res;
 }
 
-ComplexNumber ComplexNumber::operator-(const ComplexNumber& num)
+ComplexNumber ComplexNumber::operator-(const ComplexNumber& num) const
 {
 	auto res(*this);
 	res.real -= num.real;

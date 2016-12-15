@@ -14,6 +14,7 @@ template <class T>
 class Matrix
 {
 	Vector<Vector<T>> matrix;
+	Protector* protector = Protector::get_instance();
 public:
 	Matrix();
 

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <exception>
+#include "Protector.h"
 using namespace std;
 
 template <class T>
@@ -17,6 +18,7 @@ __global__ void sumVec(const T* a, double* num, size_t size);
 template <class T>
 class Vector : public vector<T>
 {
+	Protector* protector = Protector::get_instance();
 public:
 	Vector<T>();
 

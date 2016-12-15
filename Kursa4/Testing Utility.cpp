@@ -6,6 +6,8 @@
 #include <chrono>
 #include <string>
 #include <fstream>
+#include <Windows.h>
+#include <sstream>
 
 using namespace std;
 using namespace chrono;
@@ -28,8 +30,10 @@ void print_matr(Matrix<T> matr)
 }
 
 
+
 int main()
 {
+
 	cout << "PART 1: Testing for Complex number methods:\n";
 	cout << "Implementation, constructors testing.\n";
 	ComplexNumber a = ComplexNumber();

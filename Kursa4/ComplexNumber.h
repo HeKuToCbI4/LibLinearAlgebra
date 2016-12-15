@@ -1,11 +1,12 @@
 #pragma once
 #include <iostream>
-#include <string>
-#include <exception>
+#include "Protector.h"
+
 class ComplexNumber
 {
 	double real;
 	double image;
+	Protector* protector = Protector::get_instance();
 public:
 	ComplexNumber();
 	ComplexNumber(double real_x, double image_x): real(real_x), image(image_x){};
@@ -16,10 +17,10 @@ public:
 	void set_real(const double&);
 	void set_imaginary(const double&);
 	ComplexNumber& operator =(const ComplexNumber&);
-	ComplexNumber operator+(const ComplexNumber&);
-	ComplexNumber operator*(const ComplexNumber&);
-	ComplexNumber operator/(const ComplexNumber&);
-	ComplexNumber operator-(const ComplexNumber&);
+	ComplexNumber operator+(const ComplexNumber&) const;
+	ComplexNumber operator*(const ComplexNumber&) const;
+	ComplexNumber operator/(const ComplexNumber&) const;
+	ComplexNumber operator-(const ComplexNumber&) const;
 	bool operator ==(const ComplexNumber&) const;
 	ComplexNumber(const ComplexNumber&);
 	ComplexNumber get_conjugation() const;

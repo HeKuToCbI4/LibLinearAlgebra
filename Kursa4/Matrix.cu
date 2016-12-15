@@ -1,5 +1,5 @@
 #include "Matrix.cuh"
-
+#include "Vector.cuh"
 
 template <class T>
 __global__ void matMulKernel(const T* a, const T* b, T* c, size_t ay, size_t by, size_t cy)
