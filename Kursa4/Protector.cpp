@@ -7,7 +7,7 @@
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
-#define TRIAL_LAUNCHES 3
+#define TRIAL_LAUNCHES 4
 
 using std::cout; using std::endl;
 

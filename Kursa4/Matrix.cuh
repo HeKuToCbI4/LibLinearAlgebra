@@ -16,20 +16,20 @@ class Matrix
 	Vector<Vector<T>> matrix;
 	Protector* protector = Protector::get_instance();
 public:
-	Matrix();
+	__declspec(dllexport) Matrix();
 
-	Matrix(size_t x, size_t y);
+	__declspec(dllexport) Matrix(size_t x, size_t y);
 
-	void push_back(Vector<T> vec);
+	__declspec(dllexport) void push_back(Vector<T> vec);
 
-	Matrix(const Vector<T>& vec);
+	__declspec(dllexport) Matrix(const Vector<T>& vec);
 
-	Matrix(const Matrix<T>& mat);
+	__declspec(dllexport) Matrix(const Matrix<T>& mat);
 
-	double determinant();
+	__declspec(dllexport) double determinant();
 
 	friend
-	double Determinant(Matrix<T> matr)
+		__declspec(dllexport) double Determinant(Matrix<T> matr)
 	{
 		if (!matr.get_x_dim() > 0 || !matr.get_y_dim() > 0)
 			throw exception("Matrix is not initialized!");
@@ -68,17 +68,18 @@ public:
 
 	}
 
-	Matrix<T> transponate();
+	__declspec(dllexport) Matrix<T> transponate();
 
-	const Vector<T>& operator[](size_t index) const;
+	__declspec(dllexport) const Vector<T>& operator[](size_t index) const;
 
-	Vector<T>& operator[](size_t index);
+	__declspec(dllexport) Vector<T>& operator[](size_t index);
 
-	size_t get_x_dim() const;
+	__declspec(dllexport) size_t get_x_dim() const;
 
-	size_t get_y_dim() const;
+	__declspec(dllexport) size_t get_y_dim() const;
 
-	friend Matrix<T> operator + (Matrix<T> &a, Matrix<T> &b)
+	friend
+		__declspec(dllexport) Matrix<T> operator + (Matrix<T> &a, Matrix<T> &b)
 	{
 		if (!((a.get_x_dim() == b.get_x_dim()) && (b.get_y_dim() == a.get_y_dim())))
 			throw exception("Matrix sizes are different. Can't add them"); \
@@ -90,7 +91,7 @@ public:
 		return res;
 	}
 	friend
-	Matrix<T> operator*(const Matrix<T> &a, const Matrix<T> &b)
+		__declspec(dllexport) Matrix<T> operator*(const Matrix<T> &a, const Matrix<T> &b)
 	{
 		if (a.get_y_dim() != b.get_x_dim())
 			throw exception("Matrices are not fucking multiplable");
@@ -138,21 +139,23 @@ public:
 
 	}
 
-	friend Matrix<T> operator*(const Matrix<T>&a, const Vector<T> &b)
+	friend
+		__declspec(dllexport) Matrix<T> operator*(const Matrix<T>&a, const Vector<T> &b)
 	{
 		Matrix<T> tmp(b);
 
 		return a*tmp;
 	}
 
-	friend Matrix<T> operator*(const Vector<T>& b, const Matrix<T>&a)
+	friend 
+		__declspec(dllexport) Matrix<T> operator*(const Vector<T>& b, const Matrix<T>&a)
 	{
 		Matrix<T> tmp(b);
 
 		return tmp*a;
 	}
 	friend
-	bool operator==(const Matrix<T> a, const Matrix<T>& b)
+		__declspec(dllexport) bool operator==(const Matrix<T> a, const Matrix<T>& b)
 	{
 		if (a.get_x_dim() != b.get_x_dim() || a.get_y_dim() != b.get_y_dim())
 			return false;

@@ -1,6 +1,4 @@
-#include "ComplexNumber.h"
-#include "Vector.cuh"
-#include "Matrix.cuh"
+
 #include <iostream>
 #include <exception>
 #include <chrono>
@@ -8,7 +6,9 @@
 #include <fstream>
 #include <Windows.h>
 #include <sstream>
-
+#include <ComplexNumber.h>
+#include <Matrix.cuh>
+#include <Vector.cuh>
 using namespace std;
 using namespace chrono;
 
@@ -84,4 +84,3 @@ int main()
 	system("pause");
 	return 0;
 }
-

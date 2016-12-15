@@ -20,17 +20,18 @@ class Vector : public vector<T>
 {
 	Protector* protector = Protector::get_instance();
 public:
-	Vector<T>();
+	__declspec(dllexport) Vector<T>();
 
-	Vector<T>(size_t size);
+	__declspec(dllexport) Vector<T>(size_t size);
 
-	Vector<T>(const Vector<T>& vec);
+	__declspec(dllexport) Vector<T>(const Vector<T>& vec);
 
-	Vector<T>& operator=(const Vector<T>& vec);
+	__declspec(dllexport) Vector<T>& operator=(const Vector<T>& vec);
 
-	Vector operator +(const Vector<T>& a);
+	__declspec(dllexport) Vector operator +(const Vector<T>& a);
 
-	friend double operator *(const Vector<T>& a, const Vector<T> &b)
+	friend 
+		__declspec(dllexport) double operator *(const Vector<T>& a, const Vector<T> &b)
 	{
 		T* d_a;
 		T* d_b;
@@ -71,7 +72,8 @@ public:
 		return sum[0];
 	}
 	template <class X>
-	friend Vector operator *(const Vector<T>& a, const X& b)
+	friend 
+		__declspec(dllexport) Vector operator *(const Vector<T>& a, const X& b)
 	{
 		Vector<T> result = Vector(a.size());
 		T* d_a;
@@ -93,9 +95,10 @@ public:
 		return result;
 	}
 	template <class X>
-	friend Vector operator *(const X& b, const Vector<T>& a)
+	friend 
+		__declspec(dllexport) Vector operator *(const X& b, const Vector<T>& a)
 	{
 		return a*b;
 	}
-	double mixed_multiple(const Vector<T>&);
+	__declspec(dllexport) double mixed_multiple(const Vector<T>&);
 };
