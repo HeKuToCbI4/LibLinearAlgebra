@@ -1,8 +1,10 @@
 #pragma once
+
 #include "Vector.cuh"
 #include "cuda_runtime.h"
 #include <iostream>
 #include <exception>
+
 
 template <class T>
 __global__ void matMulKernel(const T* a, const T* b, T* c, size_t ay, size_t by, size_t cy);
@@ -16,20 +18,20 @@ class Matrix
 	Vector<Vector<T>> matrix;
 	Protector* protector = Protector::get_instance();
 public:
-	__declspec(dllexport) Matrix();
+	 Matrix();
 
-	__declspec(dllexport) Matrix(size_t x, size_t y);
+	 Matrix(size_t x, size_t y);
 
-	__declspec(dllexport) void push_back(Vector<T> vec);
+	 void push_back(Vector<T> vec);
 
-	__declspec(dllexport) Matrix(const Vector<T>& vec);
+	 Matrix(const Vector<T>& vec);
 
-	__declspec(dllexport) Matrix(const Matrix<T>& mat);
+	 Matrix(const Matrix<T>& mat);
 
-	__declspec(dllexport) double determinant();
+	 double determinant();
 
 	friend
-		__declspec(dllexport) double Determinant(Matrix<T> matr)
+		 double Determinant(Matrix<T> matr)
 	{
 		if (!matr.get_x_dim() > 0 || !matr.get_y_dim() > 0)
 			throw exception("Matrix is not initialized!");
@@ -68,18 +70,18 @@ public:
 
 	}
 
-	__declspec(dllexport) Matrix<T> transponate();
+	 Matrix<T> transponate();
 
-	__declspec(dllexport) const Vector<T>& operator[](size_t index) const;
+	 const Vector<T>& operator[](size_t index) const;
 
-	__declspec(dllexport) Vector<T>& operator[](size_t index);
+	 Vector<T>& operator[](size_t index);
 
-	__declspec(dllexport) size_t get_x_dim() const;
+	 size_t get_x_dim() const;
 
-	__declspec(dllexport) size_t get_y_dim() const;
+	 size_t get_y_dim() const;
 
 	friend
-		__declspec(dllexport) Matrix<T> operator + (Matrix<T> &a, Matrix<T> &b)
+		 Matrix<T> operator + (Matrix<T> &a, Matrix<T> &b)
 	{
 		if (!((a.get_x_dim() == b.get_x_dim()) && (b.get_y_dim() == a.get_y_dim())))
 			throw exception("Matrix sizes are different. Can't add them"); \
@@ -91,7 +93,7 @@ public:
 		return res;
 	}
 	friend
-		__declspec(dllexport) Matrix<T> operator*(const Matrix<T> &a, const Matrix<T> &b)
+		 Matrix<T> operator*(const Matrix<T> &a, const Matrix<T> &b)
 	{
 		if (a.get_y_dim() != b.get_x_dim())
 			throw exception("Matrices are not fucking multiplable");
@@ -140,7 +142,7 @@ public:
 	}
 
 	friend
-		__declspec(dllexport) Matrix<T> operator*(const Matrix<T>&a, const Vector<T> &b)
+		 Matrix<T> operator*(const Matrix<T>&a, const Vector<T> &b)
 	{
 		Matrix<T> tmp(b);
 
@@ -148,14 +150,14 @@ public:
 	}
 
 	friend 
-		__declspec(dllexport) Matrix<T> operator*(const Vector<T>& b, const Matrix<T>&a)
+		 Matrix<T> operator*(const Vector<T>& b, const Matrix<T>&a)
 	{
 		Matrix<T> tmp(b);
 
 		return tmp*a;
 	}
 	friend
-		__declspec(dllexport) bool operator==(const Matrix<T> a, const Matrix<T>& b)
+		 bool operator==(const Matrix<T> a, const Matrix<T>& b)
 	{
 		if (a.get_x_dim() != b.get_x_dim() || a.get_y_dim() != b.get_y_dim())
 			return false;

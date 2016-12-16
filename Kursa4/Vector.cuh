@@ -20,18 +20,18 @@ class Vector : public vector<T>
 {
 	Protector* protector = Protector::get_instance();
 public:
-	__declspec(dllexport) Vector<T>();
+	 Vector<T>();
 
-	__declspec(dllexport) Vector<T>(size_t size);
+	 Vector<T>(size_t size);
 
-	__declspec(dllexport) Vector<T>(const Vector<T>& vec);
+	 Vector<T>(const Vector<T>& vec);
 
-	__declspec(dllexport) Vector<T>& operator=(const Vector<T>& vec);
+	 Vector<T>& operator=(const Vector<T>& vec);
 
-	__declspec(dllexport) Vector operator +(const Vector<T>& a);
+	 Vector operator +(const Vector<T>& a);
 
 	friend 
-		__declspec(dllexport) double operator *(const Vector<T>& a, const Vector<T> &b)
+		 double operator *(const Vector<T>& a, const Vector<T> &b)
 	{
 		T* d_a;
 		T* d_b;
@@ -73,7 +73,7 @@ public:
 	}
 	template <class X>
 	friend 
-		__declspec(dllexport) Vector operator *(const Vector<T>& a, const X& b)
+		 Vector operator *(const Vector<T>& a, const X& b)
 	{
 		Vector<T> result = Vector(a.size());
 		T* d_a;
@@ -96,9 +96,35 @@ public:
 	}
 	template <class X>
 	friend 
-		__declspec(dllexport) Vector operator *(const X& b, const Vector<T>& a)
+		 Vector operator *(const X& b, const Vector<T>& a)
 	{
 		return a*b;
 	}
-	__declspec(dllexport) double mixed_multiple(const Vector<T>&);
+	 double mixed_multiple(const Vector<T>&);
+
+	 bool operator==(const Vector<T>&);
+
+	~Vector() {};
+
+	 friend ostream& operator<<(ostream& os, const Vector<T> right)
+	{
+		for (const auto& elem : right)
+			os << right.size() << elem << " ";
+		cout << endl;
+		return os;
+
+	}
+
+	 friend istream& operator>>(istream& is, Vector<T>& right)
+	{
+		size_t size;
+		is >> size;
+		for (auto i(0); i < size; i++)
+		{
+			T tmp;
+			is >> tmp;
+			right.emplace_back(tmp);
+		}
+		return is;
+	}
 };

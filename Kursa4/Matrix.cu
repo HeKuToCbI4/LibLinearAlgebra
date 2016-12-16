@@ -1,6 +1,10 @@
 #include "Matrix.cuh"
 #include "Vector.cuh"
+#include "cuda_runtime.h"
+#include "device_launch_parameters.h"
+#include "ComplexNumber.h"
 
+//template __declspec(dllexport) class Matrix<ComplexNumber>;
 template <class T>
 __global__ void matMulKernel(const T* a, const T* b, T* c, size_t ay, size_t by, size_t cy)
 {

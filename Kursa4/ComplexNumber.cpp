@@ -132,6 +132,10 @@ ComplexNumber::~ComplexNumber()
 {
 }
 
+bool ComplexNumber::operator!=(const ComplexNumber& right) const
+{
+	return (*this) == right;
+}
 
 
 std::ostream& operator<<(std::ostream& os, const ComplexNumber& num)

@@ -36,6 +36,7 @@ public:
 	__declspec(dllexport) ComplexNumber& operator*=(const ComplexNumber&);
 	__declspec(dllexport) ComplexNumber& operator/=(ComplexNumber&);
 	__declspec(dllexport) ~ComplexNumber();
+	__declspec(dllexport) bool operator!=(const ComplexNumber&) const;
 };
 
 template <class T>

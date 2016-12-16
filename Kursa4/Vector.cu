@@ -5,7 +5,9 @@
 #include <exception>
 #include "Vector.cuh"
 #include "Matrix.cuh"
+#include "ComplexNumber.h"
 using namespace std;
+
 
 template <class T>
 __global__ void addKernel(T *c, const T *a, const T *b, size_t N)
@@ -119,9 +121,19 @@ template <class T>
 double Vector<T>::mixed_multiple(const Vector<T>& vec)
 {
 	Matrix<T> temp;
-	for (size_t i(0); i < vec.size; i++)
+	for (size_t i(0); i < vec.size(); i++)
 		temp.push_back(vec);
 	return Determinant(temp);
 }
 
+template <class T>
+bool Vector<T>::operator==(const Vector<T>& right)
+{
+	if ((*this).size() != right.size())
+		return false;
+	for (auto i = 0; i < right.size(); i++)
+		if ((*this)[i] != right[i])
+			return false;
+	return true;
+}
 
