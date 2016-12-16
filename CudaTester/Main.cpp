@@ -4,8 +4,8 @@
 #include <string>
 #include <fstream>
 #include <ComplexNumber.h>
-#include <Matrix.cuh>
-#include <Vector.cuh>
+#include "Matrix.cuh"
+#include "Vector.cuh"
 using namespace std;
 using namespace chrono;
 
@@ -30,9 +30,6 @@ void print_matr(Matrix<T> matr)
 
 int main()
 {
-	//Vector<int> vec;
-	//cin >> vec;
-	//cout << vec;
 	cout << "PART 1: Testing for Complex number methods:\n";
 	cout << "Implementation, constructors testing.\n";
 	ComplexNumber a = ComplexNumber();
