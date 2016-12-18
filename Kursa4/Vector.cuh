@@ -4,9 +4,9 @@
 #include <vector>
 #include <exception>
 #include "Protector.h"
-#include "Matrix.cuh"
 #include "ComplexNumber.h"
 #include "device_launch_parameters.h"
+#include "Matrix.cuh"
 
 using namespace std;
 
@@ -46,6 +46,7 @@ __global__ void addKernel(T *c, const T *a, const T *b, size_t N)
 			c[i + j] = a[i + j] + b[i + j];
 }
 
+
 template <class T>
 class Vector : public vector<T>
 {
@@ -60,6 +61,11 @@ public:
 	 Vector<T>& operator=(const Vector<T>& vec);
 
 	 Vector operator +(const Vector<T>& a);
+
+	Vector operator -(const Vector<T>& right)
+	{
+		return -1*right + *this;
+	}
 
 	friend 
 		 double operator *(const Vector<T>& a, const Vector<T> &b)
@@ -134,7 +140,6 @@ public:
 	 double mixed_multiple(const Vector<T>&);
 
 	 bool operator==(const Vector<T>&);
-
 	~Vector() {};
 
 	 friend ostream& operator<<(ostream& os, const Vector<T> right)
@@ -161,12 +166,8 @@ public:
 	}
 };
 
-
-
 template <class T>
-Vector<T>::Vector() : vector<T>()
-{
-}
+Vector<T>::Vector() = default;
 
 template <class T>
 Vector<T>::Vector(size_t size) : vector<T>(size)
@@ -174,19 +175,10 @@ Vector<T>::Vector(size_t size) : vector<T>(size)
 }
 
 template <class T>
-Vector<T>::Vector(const Vector<T>& vec)
-{
-	for (auto elem : vec)
-		this->emplace_back(elem);
-}
+Vector<T>::Vector(const Vector<T>& vec) = default;
 
 template <class T>
-Vector<T>& Vector<T>::operator=(const Vector<T>& vec)
-{
-	for (auto elem : vec)
-		this->emplace_back(elem);
-	return *this;
-}
+Vector<T>& Vector<T>::operator=(const Vector<T>& vec) = default;
 
 template <class T>
 Vector<T> Vector<T>::operator+(const Vector<T>& a)
@@ -241,7 +233,7 @@ double Vector<T>::mixed_multiple(const Vector<T>& vec)
 	Matrix<T> temp;
 	for (size_t i(0); i < vec.size(); i++)
 		temp.push_back(vec);
-	return Determinant(temp);
+	return temp.determinant();
 }
 
 template <class T>

@@ -9,7 +9,7 @@ class ComplexNumber
 	Protector* protector = Protector::get_instance();
 public:
 	__declspec(dllexport) ComplexNumber();
-	__declspec(dllexport) ComplexNumber(double real_x, double image_x): real(real_x), image(image_x){};
+	__declspec(dllexport) ComplexNumber(const double& real_x, const double& image_x): real(real_x), image(image_x){};
 	template <class T>
 	__declspec(dllexport) ComplexNumber(const T& num);
 	__declspec(dllexport) double get_real() const;

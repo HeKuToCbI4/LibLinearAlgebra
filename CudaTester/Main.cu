@@ -30,6 +30,14 @@ void print_matr(Matrix<T> matr)
 
 int main()
 {
+	Matrix<int> am(4, 3), bm(4, 3);
+	for (int i = 0; i < 4; i++)
+		for (int j = 0; j < 3; j++)
+			am[i][j] = bm[i][j] = i + j;
+	print_matr(am);
+	print_matr(bm);
+	auto cm = am + bm;
+	print_matr(cm);
 	cout << "PART 1: Testing for Complex number methods:\n";
 	cout << "Implementation, constructors testing.\n";
 	ComplexNumber a = ComplexNumber();

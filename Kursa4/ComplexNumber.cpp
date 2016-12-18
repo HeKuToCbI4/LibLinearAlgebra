@@ -162,4 +162,3 @@ std::istream& operator>>(std::istream& is, ComplexNumber& num)
 		sscanf_s(s.c_str(), "%lf%lf*i", &num.real, &num.image);
 	return is;
 }
-
