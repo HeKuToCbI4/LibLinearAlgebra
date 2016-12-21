@@ -19,12 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Kursa4\Kursa4.vcxproj">
-      <Project>{4da72717-8778-46e4-acd5-f4f3cd1b99a5}</Project>
-    </ProjectReference>
+    <CudaCompile Include="..\Kursa4\ComplexNumber.cu" />
+    <CudaCompile Include="..\Kursa4\Protector.cu" />
+    <CudaCompile Include="Main.cu" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="Main.cu" />
+    <ClInclude Include="..\Kursa4\ComplexNumber.cuh" />
+    <ClInclude Include="..\Kursa4\Matrix.cuh" />
+    <ClInclude Include="..\Kursa4\Protector.cuh" />
+    <ClInclude Include="..\Kursa4\Vector.cuh" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{E2936144-36FA-471D-B374-036FED8F8954}</ProjectGuid>
@@ -95,6 +98,10 @@
       <Command>echo copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"
 copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
+    <CudaCompile>
+      <CodeGeneration />
+      <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -114,6 +121,9 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
+      <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
+      <Runtime>MTd</Runtime>
+      <CodeGeneration />
     </CudaCompile>
     <ProjectReference>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
@@ -138,6 +148,10 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
       <Command>echo copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"
 copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
+    <CudaCompile>
+      <CodeGeneration />
+      <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -161,6 +175,9 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
+      <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
+      <Runtime>MT</Runtime>
+      <CodeGeneration />
     </CudaCompile>
     <ProjectReference>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>

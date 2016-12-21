@@ -3,8 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <exception>
-#include "Protector.h"
-#include "ComplexNumber.h"
+#include "Protector.cuh"
 #include "device_launch_parameters.h"
 #include "Matrix.cuh"
 
@@ -29,7 +28,7 @@ __global__ void mulByNum(const T* a, T* b, const X n, size_t N)
 }
 
 template <class T>
-__global__ void sumVec(const T* a, double* num, size_t size)
+__global__ void sumVec(const T* a, T* num, size_t size)
 {
 	num[0] = 0;
 	for (size_t i(0); i < size; i++)
@@ -46,6 +45,16 @@ __global__ void addKernel(T *c, const T *a, const T *b, size_t N)
 			c[i + j] = a[i + j] + b[i + j];
 }
 
+template <class T>
+__global__ void diffKernel(T *c, const T *a, const T *b, size_t N)
+{
+	size_t i = threadIdx.x * 16 + blockIdx.x*blockDim.x * 16;
+	for (size_t j(0); j < 16; j++)
+		if (i + j < N)
+			c[i + j] = a[i + j] - b[i + j];
+}
+
+
 
 template <class T>
 class Vector : public vector<T>
@@ -61,14 +70,56 @@ public:
 	Vector<T>& operator=(const Vector<T>& vec);
 
 	Vector operator +(const Vector<T>& a);
-
-	Vector operator -(const Vector<T>& right)
+	Vector& operator +=(const Vector<T>& a);
+	Vector& operator -=(const Vector<T>& a);
+	Vector operator -(const Vector<T>& a)
 	{
-		return -1 * right + *this;
+		Vector<T> b = *this;
+		Vector<T> result = Vector(a.size());
+		T* d_a;
+		T* d_b;
+		T* d_c;
+		T* h_c;
+		if (a.size() != b.size())
+			throw exception("YOBA");
+		size_t size = sizeof(T)*a.size();
+		h_c = static_cast<T*>(malloc(size));
+		if (cudaMalloc(&d_a, size) != cudaSuccess)
+		{
+			cout << "error in memory allocation\n";
+			getchar();
+		}
+		cudaMalloc(&d_b, size);
+		cudaMalloc(&d_c, size);
+		if (cudaMemcpy(d_a, &a[0], size, cudaMemcpyHostToDevice) != cudaSuccess)
+		{
+			cout << "error in memory copy from host to device\n";
+			getchar();
+		}
+		cudaMemcpy(d_b, &b[0], size, cudaMemcpyHostToDevice);
+		size_t threadsperblock = 16;
+		size_t blockspergrid = (a.size() + threadsperblock * 16 - 1) / threadsperblock / 16;
+		diffKernel<< <blockspergrid, threadsperblock >> > (d_c, d_b, d_a, a.size());
+		if (cudaSuccess != cudaGetLastError())
+		{
+			cout << "Error in kernel!\n";
+			getchar();
+		}
+		if (cudaMemcpy(h_c, d_c, size, cudaMemcpyDeviceToHost) != cudaSuccess)
+		{
+			cout << "error in copying memory from device to host\n";
+			getchar();
+		}
+		result.assign(h_c, h_c + a.size());
+		cudaFree(d_a);
+		cudaFree(d_b);
+		cudaFree(d_c);
+		free(h_c);
+		return result;
 	}
 
 	friend
-		double operator *(const Vector<T>& a, const Vector<T> &b)
+		T operator *(const Vector<T>& a, const Vector<T> &b)
 	{
 		T* d_a;
 		T* d_b;
@@ -97,12 +148,12 @@ public:
 			cout << "Error in kernel!\n";
 			getchar();
 		}
-		double* sum;
-		sum = (double*)malloc(sizeof(double));
-		double* d_sum;
-		cudaMalloc(&d_sum, sizeof(double));
+		T* sum;
+		sum = static_cast<T*>(malloc(sizeof(T)));
+		T* d_sum;
+		cudaMalloc(&d_sum, sizeof(T));
 		sumVec << <1, 1 >> > (d_c, d_sum, a.size());
-		cudaMemcpy(sum, d_sum, sizeof(double), cudaMemcpyDeviceToHost);
+		cudaMemcpy(sum, d_sum, sizeof(T), cudaMemcpyDeviceToHost);
 		cudaFree(d_a);
 		cudaFree(d_b);
 		cudaFree(d_c);
@@ -117,7 +168,7 @@ public:
 		T* d_b;
 		T* h_c;
 		size_t size = sizeof(T)*a.size();
-		h_c = (T*)malloc(size);
+		h_c = static_cast<T*>(malloc(size));
 		cudaMalloc(&d_a, size);
 		cudaMalloc(&d_b, size);
 		cudaMemcpy(d_a, &a[0], size, cudaMemcpyHostToDevice);
@@ -138,7 +189,7 @@ public:
 		return a*b;
 	}
 	friend
-		double mixed_multiple(const Vector<T>& vec1, const Vector<T>& vec2, const Vector<T>& vec3)
+	T mixed_multiple(const Vector<T>& vec1, const Vector<T>& vec2, const Vector<T>& vec3)
 	{
 
 		Matrix<T> temp;
@@ -204,7 +255,7 @@ Vector<T> Vector<T>::operator+(const Vector<T>& a)
 	if (a.size() != b.size())
 		throw exception("YOBA");
 	size_t size = sizeof(T)*a.size();
-	h_c = (T*)malloc(size);
+	h_c = static_cast<T*>(malloc(size));
 	if (cudaMalloc(&d_a, size) != cudaSuccess)
 	{
 		cout << "error in memory allocation\n";
@@ -239,7 +290,89 @@ Vector<T> Vector<T>::operator+(const Vector<T>& a)
 	return result;
 }
 
+template <class T>
+Vector<T>& Vector<T>::operator+=(const Vector<T>& a)
+{
+	Vector<T> b = *this;
+	T* d_a;
+	T* d_b;
 
+	if (a.size() != b.size())
+		throw exception("YOBA");
+	size_t size = sizeof(T)*a.size();
+	if (cudaMalloc(&d_a, size) != cudaSuccess)
+	{
+		cout << "error in memory allocation\n";
+		getchar();
+	}
+	cudaMalloc(&d_b, size);
+	T* h_c = static_cast<T*>(malloc(size));
+	if (cudaMemcpy(d_a, &a[0], size, cudaMemcpyHostToDevice) != cudaSuccess)
+	{
+		cout << "error in memory copy from host to device\n";
+		getchar();
+	}
+	cudaMemcpy(d_b, &b[0], size, cudaMemcpyHostToDevice);
+	size_t threadsperblock = 16;
+	size_t blockspergrid = (a.size() + threadsperblock * 16 - 1) / threadsperblock / 16;
+	addKernel << <blockspergrid, threadsperblock >> > (d_a, d_a, d_b, a.size());
+	if (cudaSuccess != cudaGetLastError())
+	{
+		cout << "Error in kernel!\n";
+		getchar();
+	}
+	if (cudaMemcpy(h_c, d_a, size, cudaMemcpyDeviceToHost) != cudaSuccess)
+	{
+		cout << "error in copying memory from device to host\n";
+		getchar();
+	}
+	this->assign(h_c, h_c + a.size());
+	cudaFree(d_a);
+	cudaFree(d_b);
+	return *this;
+}
+
+template <class T>
+Vector<T>& Vector<T>::operator-=(const Vector<T>& a)
+{
+	Vector<T> b = *this;
+	T* d_a;
+	T* d_b;
+
+	if (a.size() != b.size())
+		throw exception("YOBA");
+	size_t size = sizeof(T)*a.size();
+	if (cudaMalloc(&d_a, size) != cudaSuccess)
+	{
+		cout << "error in memory allocation\n";
+		getchar();
+	}
+	cudaMalloc(&d_b, size);
+	T* h_c = static_cast<T*>(malloc(size));
+	if (cudaMemcpy(d_a, &a[0], size, cudaMemcpyHostToDevice) != cudaSuccess)
+	{
+		cout << "error in memory copy from host to device\n";
+		getchar();
+	}
+	cudaMemcpy(d_b, &b[0], size, cudaMemcpyHostToDevice);
+	size_t threadsperblock = 16;
+	size_t blockspergrid = (a.size() + threadsperblock * 16 - 1) / threadsperblock / 16;
+	addKernel << <blockspergrid, threadsperblock >> > (d_a, d_b, d_a, a.size());
+	if (cudaSuccess != cudaGetLastError())
+	{
+		cout << "Error in kernel!\n";
+		getchar();
+	}
+	if (cudaMemcpy(h_c, d_a, size, cudaMemcpyDeviceToHost) != cudaSuccess)
+	{
+		cout << "error in copying memory from device to host\n";
+		getchar();
+	}
+	this->assign(h_c, h_c + a.size());
+	cudaFree(d_a);
+	cudaFree(d_b);
+	return *this;
+}
 
 template <class T>
 bool Vector<T>::operator==(const Vector<T>& right)

@@ -1,7 +1,7 @@
 #pragma once
 #include "cuda_runtime.h"
 #include <iostream>
-#include "Protector.h"
+#include "Protector.cuh"
 #include "device_launch_parameters.h"
 #include <exception>
 using namespace std;
@@ -32,12 +32,12 @@ __global__ void matCompareKernel(const T* a, const T* b, bool* res, size_t ay)
 		*res = false;
 }
 template<class T, class X>
-__global__ void mulMatrByNum(const T* a, const X num,  T* c, size_t ax, size_t ay)
+__global__ void mulMatrByNum(const T* a, const X num, T* c, size_t ax, size_t ay)
 {
 	size_t row = blockIdx.x*blockDim.x + threadIdx.x;
 	size_t col = blockIdx.y*blockDim.y + threadIdx.y;
 	if (row < ax && col < ay)
-		c[row*ay + col] = a[row*ay + col]*num;
+		c[row*ay + col] = a[row*ay + col] * num;
 }
 
 template<class T>
@@ -55,27 +55,27 @@ class Matrix
 	Vector<Vector<T>> matrix;
 	Protector* protector = Protector::get_instance();
 public:
-	 Matrix();
+	Matrix();
 
-	 Matrix(size_t x, size_t y);
+	Matrix(size_t x, size_t y);
 
-	 void push_back(Vector<T> vec);
+	void push_back(Vector<T> vec);
 
-	 Matrix(const Vector<T>& vec);
+	Matrix(const Vector<T>& vec);
 
-	 Matrix(const Matrix<T>& mat);
+	Matrix(const Matrix<T>& mat);
 
-	 double determinant();
+	T determinant();
 
-	friend 
-		 double Determinant(Matrix<T> matr)
+	friend
+		T Determinant(Matrix<T> matr)
 	{
 		if (!matr.get_x_dim() > 0 || !matr.get_y_dim() > 0)
 			throw std::exception("Matrix is not initialized!");
 		if (matr.get_x_dim() != matr.get_y_dim())
 			throw exception("Matrix is not square!");
 		int i, j, j1, j2;
-		double det;
+		T det;
 		Matrix<T> m;
 		if (matr.get_x_dim() == 1)
 			return matr[0][0];
@@ -99,29 +99,29 @@ public:
 						j2++;
 					}
 				}
-				det += pow(-1.0, 1.0 + j1 + 1.0) * matr[0][j1] * Determinant(m);
+				det += (ComplexNumber)pow(-1.0, 1.0 + j1 + 1.0) * matr[0][j1] * Determinant(m);
 			}
 		}
 		return(det);
 
 	}
 
-	 Matrix<T> transponate();
+	Matrix<T> transponate();
 
-	 const Vector<T>& operator[](size_t index) const;
+	const Vector<T>& operator[](size_t index) const;
 
-	 Vector<T>& operator[](size_t index);
+	Vector<T>& operator[](size_t index);
 
-	 size_t get_x_dim() const;
+	size_t get_x_dim() const;
 
-	 size_t get_y_dim() const;
+	size_t get_y_dim() const;
 
 	friend
-		 Matrix<T> operator+(Matrix<T> &a, Matrix<T> &b)
+		Matrix<T> operator+(Matrix<T> &a, Matrix<T> &b)
 	{
 		if (!((a.get_x_dim() == b.get_x_dim()) && (b.get_y_dim() == a.get_y_dim())))
 			throw exception("Matrix sizes are different. Can't add them"); \
-		Matrix<T> res = Matrix(a.get_x_dim(), a.get_y_dim());
+			Matrix<T> res = Matrix(a.get_x_dim(), a.get_y_dim());
 		T* h_a;
 		T* h_b;
 		T* h_c;
@@ -149,8 +149,8 @@ public:
 		cudaMemcpy(d_a, h_a, sizeof(T)*a.get_x_dim()*a.get_y_dim(), cudaMemcpyHostToDevice);
 		cudaMemcpy(d_b, h_b, sizeof(T)*b.get_x_dim()*b.get_y_dim(), cudaMemcpyHostToDevice);
 		dim3 block(16, 16);
-		dim3 grid(a.get_x_dim()/block.x+1, a.get_y_dim()/block.y+1);
-		matrAddKernel<<<grid, block>>>(d_a, d_b, d_c, a.get_x_dim(), a.get_y_dim());
+		dim3 grid(a.get_x_dim() / block.x + 1, a.get_y_dim() / block.y + 1);
+		matrAddKernel << <grid, block >> > (d_a, d_b, d_c, a.get_x_dim(), a.get_y_dim());
 		cudaMemcpy(h_c, d_c, sizeof(T)*a.get_x_dim()*b.get_y_dim(), cudaMemcpyDeviceToHost);
 		for (size_t i(0); i < res.get_x_dim(); i++)
 			for (size_t j(0); j < res.get_y_dim(); j++)
@@ -164,7 +164,7 @@ public:
 		return res;
 	}
 	friend
-		 Matrix<T> operator*(const Matrix<T> &a, const Matrix<T> &b)
+		Matrix<T> operator*(const Matrix<T> &a, const Matrix<T> &b)
 	{
 		if (a.get_y_dim() != b.get_x_dim())
 			throw exception("Matrices are not fucking multiplable");
@@ -213,22 +213,22 @@ public:
 	}
 
 	friend
-		 Matrix<T> operator*(const Matrix<T>&a, const Vector<T> &b)
+		Matrix<T> operator*(const Matrix<T>&a, const Vector<T> &b)
 	{
 		Matrix<T> tmp(b);
 
 		return a*tmp;
 	}
 
-	friend 
-		 Matrix<T> operator*(const Vector<T>& b, const Matrix<T>&a)
+	friend
+		Matrix<T> operator*(const Vector<T>& b, const Matrix<T>&a)
 	{
 		Matrix<T> tmp(b);
 
 		return tmp*a;
 	}
 	friend
-		 bool operator==(const Matrix<T> a, const Matrix<T>& b)
+		bool operator==(const Matrix<T> a, const Matrix<T>& b)
 	{
 		if (a.get_x_dim() != b.get_x_dim() || a.get_y_dim() != b.get_y_dim())
 			return false;
@@ -263,7 +263,7 @@ public:
 		cudaMemcpy(d_b, h_b, sizeof(T)*b.get_x_dim()*b.get_y_dim(), cudaMemcpyHostToDevice);
 		dim3 block(1, 1);
 		dim3 grid(b.get_x_dim(), a.get_y_dim());
-		matCompareKernel << <grid, block >> >(d_a, d_b, d_res, a.get_y_dim());
+		matCompareKernel << <grid, block >> > (d_a, d_b, d_res, a.get_y_dim());
 		cudaMemcpy(res, d_res, sizeof(bool), cudaMemcpyDeviceToHost);
 		cudaFree(d_a);
 		cudaFree(d_b);
@@ -275,7 +275,7 @@ public:
 		return val;
 	}
 
-	
+
 	template<class X>
 	friend Matrix<T> operator*(const Matrix<T>& a, const X& num)
 	{
@@ -297,7 +297,7 @@ public:
 		cudaMemcpy(d_a, h_a, sizeof(T)*a.get_x_dim()*a.get_y_dim(), cudaMemcpyHostToDevice);
 		dim3 block(16, 16);
 		dim3 grid(a.get_x_dim() / block.x + 1, a.get_y_dim() / block.y + 1);
-		mulMatrByNum<< <grid, block >> >(d_a, num, d_c, a.get_x_dim(), a.get_y_dim());
+		mulMatrByNum << <grid, block >> > (d_a, num, d_c, a.get_x_dim(), a.get_y_dim());
 		cudaMemcpy(h_c, d_c, sizeof(T)*a.get_x_dim()*a.get_y_dim(), cudaMemcpyDeviceToHost);
 		for (size_t i(0); i < res.get_x_dim(); i++)
 			for (size_t j(0); j < res.get_y_dim(); j++)
@@ -357,7 +357,7 @@ Matrix<T>::Matrix(const Matrix<T>& mat)
 }
 
 template <class T>
-double Matrix<T>::determinant()
+T Matrix<T>::determinant()
 {
 	return Determinant(*this);
 }

@@ -9,11 +9,11 @@ class Protector
 	unsigned launch_count;
 	unsigned hash_val;
 	__declspec(dllexport) static unsigned hash(unsigned x); HKEY hKey;
-	__declspec(dllexport) static Protector* instance;
+	static Protector* instance;
 	Protector();
 public:
 	__declspec(dllexport) static Protector* get_instance();
-	__declspec(dllexport) bool validate() const;
+	__declspec(dllexport)  bool validate() const;
 	__declspec(dllexport) ~Protector();
 };
 

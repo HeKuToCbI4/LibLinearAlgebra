@@ -1,4 +1,4 @@
-#include "ComplexNumber.h"
+#include "ComplexNumber.cuh"
 #include <string>
 
 
@@ -141,18 +141,18 @@ bool ComplexNumber::operator!=(const ComplexNumber& right) const
 std::ostream& operator<<(std::ostream& os, const ComplexNumber& num)
 {
 	os << num.real;
-	if (num.image>=0)
+	if (num.image >= 0)
 	{
 		os << "+" << num.image << "*i";
-	} 
+	}
 	else
 	{
 		os << num.image << "*i";
 	}
 	return os;
- }
+}
 
-std::istream& operator>>(std::istream& is, ComplexNumber& num)
+std::istream& operator >> (std::istream& is, ComplexNumber& num)
 {
 	std::string s;
 	is >> s;

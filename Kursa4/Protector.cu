@@ -1,4 +1,4 @@
-#include "Protector.h"
+#include "Protector.cuh"
 #include <sstream>
 #include <string>
 #include <Windows.h>
@@ -21,7 +21,7 @@ HKEY Protector::OpenKey(HKEY hRootKey, LPCSTR strKey)
 	if (nError == ERROR_FILE_NOT_FOUND)
 	{
 		cout << "Creating registry key: " << strKey << endl;
-		nError = RegCreateKeyEx(hRootKey, strKey, NULL, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &hKey, NULL);
+		nError = RegCreateKeyEx(hRootKey, strKey, NULL, nullptr, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, nullptr, &hKey, nullptr);
 	}
 
 	if (nError)
@@ -32,21 +32,21 @@ HKEY Protector::OpenKey(HKEY hRootKey, LPCSTR strKey)
 
 void Protector::SetVal(LPCTSTR lpValue, DWORD data) const
 {
-	LONG nError = RegSetValueEx(hKey, lpValue, NULL, REG_DWORD, (LPBYTE)&data, sizeof(DWORD));
+	LONG nError = RegSetValueEx(hKey, lpValue, NULL, REG_DWORD, reinterpret_cast<LPBYTE>(&data), sizeof(DWORD));
 
 	if (nError)
-		cout << "Error: " << nError << " Could not set registry value: " << (char*)lpValue << endl;
+		cout << "Error: " << nError << " Could not set registry value: " << const_cast<char*>(lpValue) << endl;
 }
 
 DWORD Protector::GetVal(LPCTSTR lpValue) const
 {
 	DWORD data;		DWORD size = sizeof(data);	DWORD type = REG_DWORD;
-	LONG nError = RegQueryValueEx(hKey, lpValue, NULL, &type, (LPBYTE)&data, &size);
+	LONG nError = RegQueryValueEx(hKey, lpValue, nullptr, &type, reinterpret_cast<LPBYTE>(&data), &size);
 
 	if (nError == ERROR_FILE_NOT_FOUND)
 		data = 0; // The value will be created and set to data next time SetVal() is called.
 	else if (nError)
-		cout << "Error: " << nError << " Could not get registry value " << (char*)lpValue << endl;
+		cout << "Error: " << nError << " Could not get registry value " << const_cast<char*>(lpValue) << endl;
 
 	return data;
 }
@@ -97,7 +97,7 @@ Protector* Protector::get_instance()
 
 bool Protector::validate() const
 {
-	if (TRIAL_LAUNCHES==launch_count)
+	if (TRIAL_LAUNCHES == launch_count)
 		return false;
 	return true;
 }

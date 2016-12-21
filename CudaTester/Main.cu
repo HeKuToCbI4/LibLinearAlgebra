@@ -1,9 +1,8 @@
-
 #include <iostream>
 #include <chrono>
 #include <string>
 #include <fstream>
-#include <ComplexNumber.h>
+#include "ComplexNumber.cuh"
 #include "Matrix.cuh"
 #include "Vector.cuh"
 using namespace std;
@@ -30,6 +29,8 @@ void print_matr(Matrix<T> matr)
 
 int main()
 {
+	ofstream output_of_program;
+	output_of_program.open("Simple output.txt");
 	cout << "PART 1: Testing for Complex number methods:\n";
 	cout << "Implementation, constructors testing.\n";
 	ComplexNumber a = ComplexNumber();
@@ -56,7 +57,6 @@ int main()
 	cout << "number was changed to: " << b << endl;
 	ifile >> b;
 	cout << "Number after reading from file: " << b << endl;
-	system("pause");
 	ifile.close();
 	cout << "Input two numbers in form a+b*i: ";
 	cin >> a >> b;
@@ -80,12 +80,12 @@ int main()
 	cout << "It's hiiiiiiiigh noooon. Let's do something with vectors.\n Type in length of testing vector 4 example." << endl;
 	int len;
 	cin >> len;
-	Vector<double> vec1(len), vec2(len), vec3(len);
+	Vector<ComplexNumber> vec1(len), vec2(len), vec3(len);
 	for (int i = 0; i<len; i++)
 	{
-		vec1[i] = i + 1;
-		vec2[i] = i*i+1.5;
-		vec3[i] = 3;
+		vec1[i] = ComplexNumber(i + 1, i*i);
+		vec2[i] = ComplexNumber(2*i*i+1.5, 3);
+		vec3[i] = ComplexNumber(3, 6-i);
 	}
 	cout << "Vectors now look like dis: " << endl;
 	print_vec(vec1);
@@ -105,9 +105,13 @@ int main()
 	cout << "I CAN READ AND WRITE THEM TO FILES AND BUFFERED STREAMS: " << vec1 << endl;
 	cout << "first - count. then elems.\n";
 	cin >> vec1;
-	cout << vec1;
+	cout << "Binary += and -= with vec1 and vec2" << endl;
+	cout << (vec1 += vec2) << endl;
+	cout << (vec1 -= vec2) << endl;
 	cout << "DATS ALL WITH VECTORS FOR NOW." << endl;
-
+	cout << "WAIT FOR IT. LET'S TRY COMPLEX NUMBER VECTORS!1!1" << endl;
+	cout << "MATRIX TIME DUUUUUUUDE" << endl;
 	system("pause");
+	output_of_program.close();
 	return 0;
 }
