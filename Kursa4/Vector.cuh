@@ -52,23 +52,23 @@ class Vector : public vector<T>
 {
 	Protector* protector = Protector::get_instance();
 public:
-	 Vector<T>();
+	Vector<T>();
 
-	 Vector<T>(size_t size);
+	Vector<T>(size_t size);
 
-	 Vector<T>(const Vector<T>& vec);
+	Vector<T>(const Vector<T>& vec);
 
-	 Vector<T>& operator=(const Vector<T>& vec);
+	Vector<T>& operator=(const Vector<T>& vec);
 
-	 Vector operator +(const Vector<T>& a);
+	Vector operator +(const Vector<T>& a);
 
 	Vector operator -(const Vector<T>& right)
 	{
-		return -1*right + *this;
+		return -1 * right + *this;
 	}
 
-	friend 
-		 double operator *(const Vector<T>& a, const Vector<T> &b)
+	friend
+		double operator *(const Vector<T>& a, const Vector<T> &b)
 	{
 		T* d_a;
 		T* d_b;
@@ -101,7 +101,7 @@ public:
 		sum = (double*)malloc(sizeof(double));
 		double* d_sum;
 		cudaMalloc(&d_sum, sizeof(double));
-		sumVec << <1, 1 >> >(d_c, d_sum, a.size());
+		sumVec << <1, 1 >> > (d_c, d_sum, a.size());
 		cudaMemcpy(sum, d_sum, sizeof(double), cudaMemcpyDeviceToHost);
 		cudaFree(d_a);
 		cudaFree(d_b);
@@ -109,8 +109,8 @@ public:
 		return sum[0];
 	}
 	template <class X>
-	friend 
-		 Vector operator *(const Vector<T>& a, const X& b)
+	friend
+		Vector operator *(const Vector<T>& a, const X& b)
 	{
 		Vector<T> result = Vector(a.size());
 		T* d_a;
@@ -132,17 +132,28 @@ public:
 		return result;
 	}
 	template <class X>
-	friend 
-		 Vector operator *(const X& b, const Vector<T>& a)
+	friend
+		Vector operator *(const X& b, const Vector<T>& a)
 	{
 		return a*b;
 	}
-	 double mixed_multiple(const Vector<T>&);
+	friend
+		double mixed_multiple(const Vector<T>& vec1, const Vector<T>& vec2, const Vector<T>& vec3)
+	{
 
-	 bool operator==(const Vector<T>&);
+		Matrix<T> temp;
+		if (!(vec1.size() == vec2.size() && vec2.size() == vec3.size() && vec3.size() == 3))
+			throw exception("Vector sizes aren't three. NOPE");
+		temp.push_back(vec1);
+		temp.push_back(vec2);
+		temp.push_back(vec3);
+		return temp.determinant();
+	}
+
+	bool operator==(const Vector<T>&);
 	~Vector() {};
 
-	 friend ostream& operator<<(ostream& os, const Vector<T> right)
+	friend ostream& operator<<(ostream& os, const Vector<T> right)
 	{
 		os << right.size() << " ";
 		for (const auto& elem : right)
@@ -152,8 +163,9 @@ public:
 
 	}
 
-	 friend istream& operator>>(istream& is, Vector<T>& right)
+	friend istream& operator >> (istream& is, Vector<T>& right)
 	{
+		right = Vector<T>();
 		size_t size;
 		is >> size;
 		for (auto i(0); i < size; i++)
@@ -227,14 +239,7 @@ Vector<T> Vector<T>::operator+(const Vector<T>& a)
 	return result;
 }
 
-template <class T>
-double Vector<T>::mixed_multiple(const Vector<T>& vec)
-{
-	Matrix<T> temp;
-	for (size_t i(0); i < vec.size(); i++)
-		temp.push_back(vec);
-	return temp.determinant();
-}
+
 
 template <class T>
 bool Vector<T>::operator==(const Vector<T>& right)

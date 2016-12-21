@@ -30,14 +30,6 @@ void print_matr(Matrix<T> matr)
 
 int main()
 {
-	Matrix<int> am(4, 3), bm(4, 3);
-	for (int i = 0; i < 4; i++)
-		for (int j = 0; j < 3; j++)
-			am[i][j] = bm[i][j] = i + j;
-	print_matr(am);
-	print_matr(bm);
-	auto cm = am + bm;
-	print_matr(cm);
 	cout << "PART 1: Testing for Complex number methods:\n";
 	cout << "Implementation, constructors testing.\n";
 	ComplexNumber a = ComplexNumber();
@@ -84,6 +76,37 @@ int main()
 	cout << "a-2=" << (a - num) << endl;
 	cout << "a*2=" << (a * num) << endl;
 	cout << "a/2=" << (a / num) << endl;
+	cout << "ENOUGH COMPLEX NUMBERS 4 YA." << endl;
+	cout << "It's hiiiiiiiigh noooon. Let's do something with vectors.\n Type in length of testing vector 4 example." << endl;
+	int len;
+	cin >> len;
+	Vector<double> vec1(len), vec2(len), vec3(len);
+	for (int i = 0; i<len; i++)
+	{
+		vec1[i] = i + 1;
+		vec2[i] = i*i+1.5;
+		vec3[i] = 3;
+	}
+	cout << "Vectors now look like dis: " << endl;
+	print_vec(vec1);
+	print_vec(vec2);
+	print_vec(vec3);
+	cout << "Now let's see does CUDA functions work properly:\n";
+	cout << "SUM OF VECTORS: " << endl;
+	print_vec(vec1 + vec2);
+	cout << "Difference of vectors\n";
+	print_vec(vec1 - vec2);
+	cout << "LALALA IT'S TIME TO SEE IF SCALAR MULTIPLE IS REAL: " << (vec1*vec2) << endl;
+	cout << "And indeed we want to see if we can calculate sth like mixed multiple vec1 and vec2: " << mixed_multiple(vec1, vec2, vec3) << endl;
+	cout << "Result of multiplication vec1 by 2 and 3 by vec1" << endl;
+	print_vec(vec1 * 2);
+	print_vec(3 * vec1);
+	cout << "I CAN COMPARE VECTORS. RES OF COMPARING 1 and 3 and 1 and 1: " << (vec1 == vec3) << "  " << (vec1 == vec1) << endl;
+	cout << "I CAN READ AND WRITE THEM TO FILES AND BUFFERED STREAMS: " << vec1 << endl;
+	cout << "first - count. then elems.\n";
+	cin >> vec1;
+	cout << vec1;
+	cout << "DATS ALL WITH VECTORS FOR NOW." << endl;
 
 	system("pause");
 	return 0;

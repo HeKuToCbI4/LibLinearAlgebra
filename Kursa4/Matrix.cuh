@@ -32,10 +32,12 @@ __global__ void matCompareKernel(const T* a, const T* b, bool* res, size_t ay)
 		*res = false;
 }
 template<class T, class X>
-__global__ void mulMatrByNum(const T* a, T* b, const X n, size_t N)
+__global__ void mulMatrByNum(const T* a, const X num,  T* c, size_t ax, size_t ay)
 {
-	size_t i = threadIdx.x + blockIdx.x*blockDim.x;
-	b[i] = a[i] * n;
+	size_t row = blockIdx.x*blockDim.x + threadIdx.x;
+	size_t col = blockIdx.y*blockDim.y + threadIdx.y;
+	if (row < ax && col < ay)
+		c[row*ay + col] = a[row*ay + col]*num;
 }
 
 template<class T>
@@ -150,9 +152,6 @@ public:
 		dim3 grid(a.get_x_dim()/block.x+1, a.get_y_dim()/block.y+1);
 		matrAddKernel<<<grid, block>>>(d_a, d_b, d_c, a.get_x_dim(), a.get_y_dim());
 		cudaMemcpy(h_c, d_c, sizeof(T)*a.get_x_dim()*b.get_y_dim(), cudaMemcpyDeviceToHost);
-		for (int i = 0; i < 12; i++)
-			cout << h_c[i] << " ";
-		cout << endl;
 		for (size_t i(0); i < res.get_x_dim(); i++)
 			for (size_t j(0); j < res.get_y_dim(); j++)
 				res[i][j] = h_c[i*res.get_y_dim() + j];
@@ -277,11 +276,44 @@ public:
 	}
 
 	
-	/*template<class X>
-	friend Matrix<T> operator*(const Matrix<T>& matr, const X& num)
+	template<class X>
+	friend Matrix<T> operator*(const Matrix<T>& a, const X& num)
 	{
+		Matrix<T> res = Matrix(a.get_x_dim(), a.get_y_dim());
+		T* h_a;
+		T* h_c;
+		T *d_a, *d_c;
+		h_a = (T*)(malloc(sizeof(T)*a.get_x_dim()*a.get_y_dim()));
+		h_c = (T*)(malloc(sizeof(T)*a.get_x_dim()*a.get_y_dim()));
+		for (size_t i(0); i < a.get_x_dim(); i++)
+		{
+			for (size_t j(0); j < a.get_y_dim(); j++)
+			{
+				h_a[i*a.get_y_dim() + j] = a[i][j];
+			}
+		}
+		cudaMalloc(&d_a, sizeof(T)*a.get_x_dim()*a.get_y_dim());
+		cudaMalloc(&d_c, sizeof(T)*a.get_x_dim()*a.get_y_dim());
+		cudaMemcpy(d_a, h_a, sizeof(T)*a.get_x_dim()*a.get_y_dim(), cudaMemcpyHostToDevice);
+		dim3 block(16, 16);
+		dim3 grid(a.get_x_dim() / block.x + 1, a.get_y_dim() / block.y + 1);
+		mulMatrByNum<< <grid, block >> >(d_a, num, d_c, a.get_x_dim(), a.get_y_dim());
+		cudaMemcpy(h_c, d_c, sizeof(T)*a.get_x_dim()*a.get_y_dim(), cudaMemcpyDeviceToHost);
+		for (size_t i(0); i < res.get_x_dim(); i++)
+			for (size_t j(0); j < res.get_y_dim(); j++)
+				res[i][j] = h_c[i*res.get_y_dim() + j];
+		cudaFree(d_a);
+		cudaFree(d_c);
+		free(h_a);
+		free(h_c);
+		return res;
+	}
 
-	}*/
+	template<class X>
+	friend Matrix<T> operator*(const X& num, const Matrix<T>& a)
+	{
+		return a*num;
+	}
 
 	bool operator!=(const Matrix<T> right)
 	{
