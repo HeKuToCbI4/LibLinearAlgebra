@@ -97,7 +97,13 @@ int main()
 	cout << "Difference of vectors\n";
 	print_vec(vec1 - vec2);
 	cout << "LALALA IT'S TIME TO SEE IF SCALAR MULTIPLE IS REAL: " << (vec1*vec2) << endl;
-	cout << "And indeed we want to see if we can calculate sth like mixed multiple vec1 and vec2: " << mixed_multiple(vec1, vec2, vec3) << endl;
+	try {
+		cout << "And indeed we want to see if we can calculate sth like mixed multiple vec1 and vec2: " << mixed_multiple(vec1, vec2, vec3) << endl;
+	}
+	catch(exception e)
+	{
+		cout << e.what() << endl;
+	}
 	cout << "Result of multiplication vec1 by 2 and 3 by vec1" << endl;
 	print_vec(vec1 * 2);
 	print_vec(3 * vec1);
@@ -111,6 +117,36 @@ int main()
 	cout << "DATS ALL WITH VECTORS FOR NOW." << endl;
 	cout << "WAIT FOR IT. LET'S TRY COMPLEX NUMBER VECTORS!1!1" << endl;
 	cout << "MATRIX TIME DUUUUUUUDE" << endl;
+	int n, m;
+	cout << "Test for matrices. Input x and y" << endl;
+	cin >> n >> m;
+	Matrix<ComplexNumber> am(n, m), bm(n, m), cm, dm;
+	Vector<ComplexNumber> vec(n);
+	cout << "Filling a with ComplexNumber(i, j), filling b with i+j" << endl;
+	for (auto i(0); i < n; i++)
+		for (auto j(0); j < m; j++)
+		{
+			am[i][j] = ComplexNumber(i, j);
+			bm[i][j] = i + j;
+			vec[i] = ComplexNumber(i + 1, j*j);
+		}
+	cout << "Matrices" << endl;
+	print_matr(am);
+	print_matr(bm);
+	cout << "Operators test" << endl;
+	cout << "a+b" << endl;
+	print_matr(am + bm);
+	cout << "a-b" << endl;
+	print_matr(am - bm);
+	cout << "Matrix a == b and a!=b: " << (am==bm) << "  " << (am!=bm) << endl;
+	cout << "Multiple matrix by number a*2 and 3*b" << endl;
+	print_matr(am * 2);
+	print_matr(3 * bm);
+	cout << "Matrix a determinant: " << am.determinant() << endl;
+	cout << "Multiple matrix by vector of size n (vec*matr)" << endl;
+	print_vec(vec);
+	print_matr(vec*am);
+	cout << "Thats all for now!" << endl << "BruteForce part incoming!" << endl;
 	system("pause");
 	output_of_program.close();
 	return 0;

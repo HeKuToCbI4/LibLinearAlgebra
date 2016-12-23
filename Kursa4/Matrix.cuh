@@ -49,6 +49,15 @@ __global__ void matrAddKernel(const T* a, const T* b, T* c, size_t ax, size_t ay
 		c[row*ay + col] = a[row*ay + col] + b[row*ay + col];
 }
 
+template<class T>
+__global__ void matrDiffKernel(const T* a, const T* b, T* c, size_t ax, size_t ay)
+{
+	size_t row = blockIdx.x*blockDim.x + threadIdx.x;
+	size_t col = blockIdx.y*blockDim.y + threadIdx.y;
+	if (row < ax && col < ay)
+		c[row*ay + col] = a[row*ay + col] - b[row*ay + col];
+}
+
 template <class T>
 class Matrix
 {
@@ -151,6 +160,54 @@ public:
 		dim3 block(16, 16);
 		dim3 grid(a.get_x_dim() / block.x + 1, a.get_y_dim() / block.y + 1);
 		matrAddKernel << <grid, block >> > (d_a, d_b, d_c, a.get_x_dim(), a.get_y_dim());
+		cudaMemcpy(h_c, d_c, sizeof(T)*a.get_x_dim()*b.get_y_dim(), cudaMemcpyDeviceToHost);
+		for (size_t i(0); i < res.get_x_dim(); i++)
+			for (size_t j(0); j < res.get_y_dim(); j++)
+				res[i][j] = h_c[i*res.get_y_dim() + j];
+		cudaFree(d_a);
+		cudaFree(d_b);
+		cudaFree(d_c);
+		free(h_a);
+		free(h_b);
+		free(h_c);
+		return res;
+	}
+
+	friend
+		Matrix<T> operator-(Matrix<T> &a, Matrix<T> &b)
+	{
+		if (!((a.get_x_dim() == b.get_x_dim()) && (b.get_y_dim() == a.get_y_dim())))
+			throw exception("Matrix sizes are different. Can't add them"); \
+			Matrix<T> res = Matrix(a.get_x_dim(), a.get_y_dim());
+		T* h_a;
+		T* h_b;
+		T* h_c;
+		T *d_a, *d_b, *d_c;
+		h_a = (T*)(malloc(sizeof(T)*a.get_x_dim()*a.get_y_dim()));
+		h_b = (T*)(malloc(sizeof(T)*b.get_x_dim()*b.get_y_dim()));
+		h_c = (T*)(malloc(sizeof(T)*a.get_x_dim()*b.get_y_dim()));
+		for (size_t i(0); i < a.get_x_dim(); i++)
+		{
+			for (size_t j(0); j < a.get_y_dim(); j++)
+			{
+				h_a[i*a.get_y_dim() + j] = a[i][j];
+			}
+		}
+		for (size_t i(0); i < b.get_x_dim(); i++)
+		{
+			for (size_t j(0); j < b.get_y_dim(); j++)
+			{
+				h_b[i*b.get_y_dim() + j] = b[i][j];
+			}
+		}
+		cudaMalloc(&d_a, sizeof(T)*a.get_x_dim()*a.get_y_dim());
+		cudaMalloc(&d_b, sizeof(T)*b.get_x_dim()*b.get_y_dim());
+		cudaMalloc(&d_c, sizeof(T)*a.get_x_dim()*a.get_y_dim());
+		cudaMemcpy(d_a, h_a, sizeof(T)*a.get_x_dim()*a.get_y_dim(), cudaMemcpyHostToDevice);
+		cudaMemcpy(d_b, h_b, sizeof(T)*b.get_x_dim()*b.get_y_dim(), cudaMemcpyHostToDevice);
+		dim3 block(16, 16);
+		dim3 grid(a.get_x_dim() / block.x + 1, a.get_y_dim() / block.y + 1);
+		matrDiffKernel << <grid, block >> > (d_a, d_b, d_c, a.get_x_dim(), a.get_y_dim());
 		cudaMemcpy(h_c, d_c, sizeof(T)*a.get_x_dim()*b.get_y_dim(), cudaMemcpyDeviceToHost);
 		for (size_t i(0); i < res.get_x_dim(); i++)
 			for (size_t j(0); j < res.get_y_dim(); j++)
