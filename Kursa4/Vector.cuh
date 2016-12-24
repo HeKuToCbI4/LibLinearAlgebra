@@ -84,32 +84,15 @@ public:
 			throw exception("YOBA");
 		size_t size = sizeof(T)*a.size();
 		h_c = static_cast<T*>(malloc(size));
-		if (cudaMalloc(&d_a, size) != cudaSuccess)
-		{
-			cout << "error in memory allocation\n";
-			getchar();
-		}
+		cudaMalloc(&d_a, size);
 		cudaMalloc(&d_b, size);
 		cudaMalloc(&d_c, size);
-		if (cudaMemcpy(d_a, &a[0], size, cudaMemcpyHostToDevice) != cudaSuccess)
-		{
-			cout << "error in memory copy from host to device\n";
-			getchar();
-		}
+		cudaMemcpy(d_a, &a[0], size, cudaMemcpyHostToDevice);
 		cudaMemcpy(d_b, &b[0], size, cudaMemcpyHostToDevice);
 		size_t threadsperblock = 16;
 		size_t blockspergrid = (a.size() + threadsperblock * 16 - 1) / threadsperblock / 16;
 		diffKernel<< <blockspergrid, threadsperblock >> > (d_c, d_b, d_a, a.size());
-		if (cudaSuccess != cudaGetLastError())
-		{
-			cout << "Error in kernel!\n";
-			getchar();
-		}
-		if (cudaMemcpy(h_c, d_c, size, cudaMemcpyDeviceToHost) != cudaSuccess)
-		{
-			cout << "error in copying memory from device to host\n";
-			getchar();
-		}
+		cudaMemcpy(h_c, d_c, size, cudaMemcpyDeviceToHost);
 		result.assign(h_c, h_c + a.size());
 		cudaFree(d_a);
 		cudaFree(d_b);
@@ -127,27 +110,15 @@ public:
 		if (a.size() != b.size())
 			throw exception("YOBA");
 		size_t size = sizeof(T)*a.size();
-		if (cudaMalloc(&d_a, size) != cudaSuccess)
-		{
-			cout << "error in memory allocation\n";
-			getchar();
-		}
+		cudaMalloc(&d_a, size);
 		cudaMalloc(&d_b, size);
 		cudaMalloc(&d_c, size);
-		if (cudaMemcpy(d_a, &a[0], size, cudaMemcpyHostToDevice) != cudaSuccess)
-		{
-			cout << "error in memory copy from host to device\n";
-			getchar();
-		}
+		cudaMemcpy(d_a, &a[0], size, cudaMemcpyHostToDevice);
 		cudaMemcpy(d_b, &b[0], size, cudaMemcpyHostToDevice);
 		size_t threadsperblock = 16;
 		size_t blockspergrid = (a.size() + threadsperblock * 16 - 1) / threadsperblock / 16;
 		mulKernel << <blockspergrid, threadsperblock >> > (d_a, d_b, d_c, a.size());
-		if (cudaSuccess != cudaGetLastError())
-		{
-			cout << "Error in kernel!\n";
-			getchar();
-		}
+		
 		T* sum;
 		sum = static_cast<T*>(malloc(sizeof(T)));
 		T* d_sum;
@@ -227,6 +198,17 @@ public:
 		}
 		return is;
 	}
+
+	Vector sum_vectors(const Vector<T>& vec)
+	{
+		///Just for test.///
+		Vector<T> res;
+		for (auto i(0); i<vec.size(); i++)
+		{
+			res.emplace_back(vec[i] + this->at(i));
+		}
+		return res;
+	}
 };
 
 template <class T>
@@ -256,32 +238,15 @@ Vector<T> Vector<T>::operator+(const Vector<T>& a)
 		throw exception("YOBA");
 	size_t size = sizeof(T)*a.size();
 	h_c = static_cast<T*>(malloc(size));
-	if (cudaMalloc(&d_a, size) != cudaSuccess)
-	{
-		cout << "error in memory allocation\n";
-		getchar();
-	}
+	cudaMalloc(&d_a, size);
 	cudaMalloc(&d_b, size);
 	cudaMalloc(&d_c, size);
-	if (cudaMemcpy(d_a, &a[0], size, cudaMemcpyHostToDevice) != cudaSuccess)
-	{
-		cout << "error in memory copy from host to device\n";
-		getchar();
-	}
+	cudaMemcpy(d_a, &a[0], size, cudaMemcpyHostToDevice);
 	cudaMemcpy(d_b, &b[0], size, cudaMemcpyHostToDevice);
 	size_t threadsperblock = 16;
 	size_t blockspergrid = (a.size() + threadsperblock * 16 - 1) / threadsperblock / 16;
 	addKernel << <blockspergrid, threadsperblock >> > (d_c, d_a, d_b, a.size());
-	if (cudaSuccess != cudaGetLastError())
-	{
-		cout << "Error in kernel!\n";
-		getchar();
-	}
-	if (cudaMemcpy(h_c, d_c, size, cudaMemcpyDeviceToHost) != cudaSuccess)
-	{
-		cout << "error in copying memory from device to host\n";
-		getchar();
-	}
+	cudaMemcpy(h_c, d_c, size, cudaMemcpyDeviceToHost);
 	result.assign(h_c, h_c + a.size());
 	cudaFree(d_a);
 	cudaFree(d_b);
@@ -300,32 +265,16 @@ Vector<T>& Vector<T>::operator+=(const Vector<T>& a)
 	if (a.size() != b.size())
 		throw exception("YOBA");
 	size_t size = sizeof(T)*a.size();
-	if (cudaMalloc(&d_a, size) != cudaSuccess)
-	{
-		cout << "error in memory allocation\n";
-		getchar();
-	}
+	cudaMalloc(&d_a, size);
 	cudaMalloc(&d_b, size);
 	T* h_c = static_cast<T*>(malloc(size));
-	if (cudaMemcpy(d_a, &a[0], size, cudaMemcpyHostToDevice) != cudaSuccess)
-	{
-		cout << "error in memory copy from host to device\n";
-		getchar();
-	}
+	cudaMemcpy(d_a, &a[0], size, cudaMemcpyHostToDevice);
+	
 	cudaMemcpy(d_b, &b[0], size, cudaMemcpyHostToDevice);
 	size_t threadsperblock = 16;
 	size_t blockspergrid = (a.size() + threadsperblock * 16 - 1) / threadsperblock / 16;
 	addKernel << <blockspergrid, threadsperblock >> > (d_a, d_a, d_b, a.size());
-	if (cudaSuccess != cudaGetLastError())
-	{
-		cout << "Error in kernel!\n";
-		getchar();
-	}
-	if (cudaMemcpy(h_c, d_a, size, cudaMemcpyDeviceToHost) != cudaSuccess)
-	{
-		cout << "error in copying memory from device to host\n";
-		getchar();
-	}
+	cudaMemcpy(h_c, d_a, size, cudaMemcpyDeviceToHost);
 	this->assign(h_c, h_c + a.size());
 	cudaFree(d_a);
 	cudaFree(d_b);
@@ -342,32 +291,15 @@ Vector<T>& Vector<T>::operator-=(const Vector<T>& a)
 	if (a.size() != b.size())
 		throw exception("YOBA");
 	size_t size = sizeof(T)*a.size();
-	if (cudaMalloc(&d_a, size) != cudaSuccess)
-	{
-		cout << "error in memory allocation\n";
-		getchar();
-	}
+	cudaMalloc(&d_a, size);
 	cudaMalloc(&d_b, size);
 	T* h_c = static_cast<T*>(malloc(size));
-	if (cudaMemcpy(d_a, &a[0], size, cudaMemcpyHostToDevice) != cudaSuccess)
-	{
-		cout << "error in memory copy from host to device\n";
-		getchar();
-	}
+	cudaMemcpy(d_a, &a[0], size, cudaMemcpyHostToDevice);
 	cudaMemcpy(d_b, &b[0], size, cudaMemcpyHostToDevice);
 	size_t threadsperblock = 16;
 	size_t blockspergrid = (a.size() + threadsperblock * 16 - 1) / threadsperblock / 16;
 	addKernel << <blockspergrid, threadsperblock >> > (d_a, d_b, d_a, a.size());
-	if (cudaSuccess != cudaGetLastError())
-	{
-		cout << "Error in kernel!\n";
-		getchar();
-	}
-	if (cudaMemcpy(h_c, d_a, size, cudaMemcpyDeviceToHost) != cudaSuccess)
-	{
-		cout << "error in copying memory from device to host\n";
-		getchar();
-	}
+	cudaMemcpy(h_c, d_a, size, cudaMemcpyDeviceToHost);
 	this->assign(h_c, h_c + a.size());
 	cudaFree(d_a);
 	cudaFree(d_b);

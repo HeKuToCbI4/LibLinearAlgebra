@@ -68,7 +68,7 @@ public:
 
 	Matrix(size_t x, size_t y);
 
-	void push_back(Vector<T> vec);
+	void push_back(const Vector<T>& vec);
 
 	Matrix(const Vector<T>& vec);
 
@@ -108,7 +108,7 @@ public:
 						j2++;
 					}
 				}
-				det += (ComplexNumber)pow(-1.0, 1.0 + j1 + 1.0) * matr[0][j1] * Determinant(m);
+				det += T(pow(-1.0, 1.0 + j1 + 1.0)) * matr[0][j1] * Determinant(m);
 			}
 		}
 		return(det);
@@ -395,9 +395,12 @@ Matrix<T>::Matrix(size_t x, size_t y)
 }
 
 template <class T>
-void Matrix<T>::push_back(Vector<T> vec)
+void Matrix<T>::push_back(const Vector<T>& vec)
 {
-	matrix.push_back(vec);
+	if (get_y_dim() == vec.size())
+		matrix.push_back(vec);
+	else
+		throw exception("Can't push back due to different sizes of matrix and vector");
 }
 
 template <class T>
