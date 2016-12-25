@@ -209,6 +209,26 @@ public:
 		}
 		return res;
 	}
+	Vector diff_vectors(const Vector<T>& vec)
+	{
+		///Just for test.///
+		Vector<T> res;
+		for (auto i(0); i<vec.size(); i++)
+		{
+			res.emplace_back(vec[i] - this->at(i));
+		}
+		return res;
+	}
+	Vector scalar_vectors(const Vector<T>& vec)
+	{
+		///Just for test.///
+		T res=0;
+		for (auto i(0); i<vec.size(); i++)
+		{
+			res+=(vec[i] * this->at(i));
+		}
+		return res;
+	}
 };
 
 template <class T>

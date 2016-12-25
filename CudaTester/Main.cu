@@ -5,6 +5,7 @@
 #include "ComplexNumber.cuh"
 #include "Matrix.cuh"
 #include "Vector.cuh"
+#include <Windows.h>
 using namespace std;
 using namespace chrono;
 
@@ -156,12 +157,20 @@ int main()
 
 	cout << "Input number of tests and start point." << endl;
 	cin >> n >> m;
-	ofstream vecTime, matTime, procVecTime, procMatTime;
-	vecTime.open("Vector operator+ time CUDA.txt");
-	procVecTime.open("Vector sum cpu.txt");
+	ofstream vecSumTime, procVecSumTime, vecDiffTime, procVecDiffTime, vecScalarTime, procVecScalarTime, matSumTime, procMatSumTime, matMulTime, procMatMulTime;
+	vecDiffTime.open("Vector operator- time CUDA.txt");
+	procVecDiffTime.open("Vector diff cpu.txt");
+	vecSumTime.open("Vector operator+ time CUDA.txt");
+	procVecSumTime.open("Vector Sum cpu.txt");
+	vecScalarTime.open("Vector scalar time CUDA.txt");
+	procVecScalarTime.open("Vector Scalar cpu.txt");
+	matMulTime.open("Matrix Mul time CUDA.txt");
+	procMatMulTime.open("Matrix mul cpu.txt");
+	matSumTime.open("Matrix sum time CUDA.txt");
+	procMatSumTime.open("Matrix sum cpu.txt");
 	high_resolution_clock::time_point t1, t2;
-	Matrix<double> matr1, matr2;
 	Vector<double> vect1, vect2;
+
 	for (auto i(0); i<m; i++)
 	{
 		vect1.emplace_back(i*1.25 + 1);
@@ -169,14 +178,67 @@ int main()
 	}
 	for (auto i = m; i < n + m; i++)
 	{
+		vect1 + vect2;
+		vect1 - vect2;
+		Matrix<double> matrix1, matrix2;
+		matrix1 = Matrix<double>();
+		matrix2 = Matrix<double>();
+		for (auto k = 0; k < i; k++)
+		{
+			matrix1.push_back(vect1);
+			matrix2.push_back(vect2);
+		}
+		t1 = high_resolution_clock::now();
+		vect1 - vect2;
+		t2 = high_resolution_clock::now();
+		vecDiffTime << duration_cast<microseconds>(t2 - t1).count() << endl;
+		t1 = high_resolution_clock::now();
+		vect1.diff_vectors(vect2);
+		t2 = high_resolution_clock::now();
+		procVecDiffTime << duration_cast<microseconds>(t2 - t1).count() << endl;
+
 		t1 = high_resolution_clock::now();
 		vect1 + vect2;
 		t2 = high_resolution_clock::now();
-		vecTime << duration_cast<microseconds>(t2 - t1).count() << endl;
+		vecSumTime << duration_cast<microseconds>(t2 - t1).count() << endl;
 		t1 = high_resolution_clock::now();
 		vect1.sum_vectors(vect2);
 		t2 = high_resolution_clock::now();
-		procVecTime << duration_cast<microseconds>(t2 - t1).count() << endl;
+		procVecSumTime << duration_cast<microseconds>(t2 - t1).count() << endl;
+
+		t1 = high_resolution_clock::now();
+		vect1 * vect2;
+		t2 = high_resolution_clock::now();
+		vecScalarTime << duration_cast<microseconds>(t2 - t1).count() << endl;
+		if (i < 500)
+		{
+			t1 = high_resolution_clock::now();
+			vect1.scalar_vectors(vect2);
+			t2 = high_resolution_clock::now();
+			procVecScalarTime << duration_cast<microseconds>(t2 - t1).count() << endl;
+		}
+		t1 = high_resolution_clock::now();
+		matrix1 + matrix2;
+		t2 = high_resolution_clock::now();
+		matSumTime << duration_cast<microseconds>(t2 - t1).count() << endl;
+		t1 = high_resolution_clock::now();
+		matrix1.sum_matrices(matrix2);
+		t2 = high_resolution_clock::now();
+		procMatSumTime << duration_cast<microseconds>(t2 - t1).count() << endl;
+		if (i < 750)
+		{
+			t1 = high_resolution_clock::now();
+			matrix1 * matrix2;
+			t2 = high_resolution_clock::now();
+			matMulTime << duration_cast<microseconds>(t2 - t1).count() << endl;
+		}
+		if (i < 500)
+		{
+			t1 = high_resolution_clock::now();
+			matrix1.multiply_matrices(matrix2);
+			t2 = high_resolution_clock::now();
+			procMatMulTime << duration_cast<microseconds>(t2 - t1).count() << endl;
+		}
 		vect1.emplace_back(i*1.25 + 1);
 		vect2.emplace_back(i*10.0001 + 12);
 		cout << "Remain: " << n + m - i << endl;

@@ -79,7 +79,7 @@ public:
 	friend
 		T Determinant(Matrix<T> matr)
 	{
-		if (!matr.get_x_dim() > 0 || !matr.get_y_dim() > 0)
+		if (!(matr.get_x_dim() > 0) || !(matr.get_y_dim() > 0))
 			throw std::exception("Matrix is not initialized!");
 		if (matr.get_x_dim() != matr.get_y_dim())
 			throw exception("Matrix is not square!");
@@ -183,9 +183,9 @@ public:
 		T* h_b;
 		T* h_c;
 		T *d_a, *d_b, *d_c;
-		h_a = (T*)(malloc(sizeof(T)*a.get_x_dim()*a.get_y_dim()));
-		h_b = (T*)(malloc(sizeof(T)*b.get_x_dim()*b.get_y_dim()));
-		h_c = (T*)(malloc(sizeof(T)*a.get_x_dim()*b.get_y_dim()));
+		h_a = static_cast<T*>(malloc(sizeof(T)*a.get_x_dim()*a.get_y_dim()));
+		h_b = static_cast<T*>(malloc(sizeof(T)*b.get_x_dim()*b.get_y_dim()));
+		h_c = static_cast<T*>(malloc(sizeof(T)*a.get_x_dim()*b.get_y_dim()));
 		for (size_t i(0); i < a.get_x_dim(); i++)
 		{
 			for (size_t j(0); j < a.get_y_dim(); j++)
@@ -376,6 +376,32 @@ public:
 	{
 		return !(*this == right);
 	}
+
+	Matrix sum_matrices(const Matrix<T> & right)
+	{
+		auto x = get_x_dim();
+		auto y = get_y_dim();
+		Matrix<T> res(x, y);
+		for (auto i(0); i < x; i++)
+			for (auto j(0); j < y; j++)
+				res[i][j] = matrix[i][j] + right[i][j];
+		return res;
+	}
+	Matrix multiply_matrices(const Matrix<T>& right)
+	{
+		auto x = get_x_dim();
+		auto y = right.get_y_dim();
+		auto q = get_y_dim();
+		Matrix<T> res(x, y);
+		for (auto i = 0; i < x; i++)
+			for (auto j = 0; j < y; j++)
+			{
+				res[i][j] = 0;
+				for (auto k = 0; k < q; k++)
+					res[i][j] += (matrix[i][k] * right[k][j]);
+			}
+		return res;
+	}
 };
 
 
@@ -397,7 +423,7 @@ Matrix<T>::Matrix(size_t x, size_t y)
 template <class T>
 void Matrix<T>::push_back(const Vector<T>& vec)
 {
-	if (get_y_dim() == vec.size())
+	if (get_x_dim()==0 || get_x_dim()>0 && get_y_dim() == vec.size())
 		matrix.push_back(vec);
 	else
 		throw exception("Can't push back due to different sizes of matrix and vector");
